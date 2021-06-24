@@ -84,7 +84,7 @@ enum class DocumentStatus {
     1. SetStopWords - устанавливает стоп-слов, которые просто игнорируются в документах
     2. AddDocument - добавляет документ в SearchServer, а также его рейтинг
     3. FindTopDocuments - выводит топ документов (до 5) по запросу
-    4. GetDocumentCount - возвращает информацию о кол-ве документов в SearchServer
+    4. GetDocumentCount - возвращает информацию о кол-ве документов
 */
 
 class SearchServer {
@@ -99,11 +99,11 @@ private:
     set<string> stop_words_;
 
     // Структура данных, которая хранит информацию о каждом слове:
-    // ИД документов где встречается это слово, релевантность в этих документах
+    // ИД документов где встречается это слово, доля в этих документах
     map<string, map<int, double>> word_to_document_freqs_;
 
     // Структура данных для хранения дополнительной информации о документах
-    map<int, DocumentData> documents_extra;
+    map<int, DocumentData> documents_extra_;
 
 
 public:
@@ -131,7 +131,7 @@ public:
         }
 
         // Сохраняем дополнительную информацию о документе
-        documents_extra.emplace(document_id, 
+        documents_extra_.emplace(document_id, 
             DocumentData{
                 ComputeAverageRating(ratings), 
                 status
@@ -140,7 +140,7 @@ public:
 
     // Найти топ документы. Используется шаблон и его специализации
     // Параметры - запрос
-    // Дополнительные парамтетры - статус документа | функция-предикат
+    // Дополнительные параметры (специализация) - статус документа | функция-предикат
 	template <typename Filter>
     vector<Document> FindTopDocuments(const string& raw_query, Filter filter) const {            
         // Получаем запрос с плюс- и минус-словами
@@ -152,11 +152,11 @@ public:
 
 		// Фильтруем документы
 		for (const auto& document : all_documents)
-			if (filter(document.id, documents_extra.at(document.id).status, document.rating))
+			if (filter(document.id, documents_extra_.at(document.id).status, document.rating))
 				matched_documents.push_back(document);
 		
 		// Сортируем сначала по релевантности, после по рейтингу
-		auto& documents_for_status = documents_extra;         
+		auto& documents_for_status = documents_extra_;         
         sort(matched_documents.begin(), matched_documents.end(),
             [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
                 if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
@@ -166,6 +166,7 @@ public:
                 }
              });
 
+        // Не забываем про ограничение выводимых документов в топе
         if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) {
             matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
         }
@@ -174,7 +175,9 @@ public:
     }
 
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus document_status) const {
-		return FindTopDocuments(raw_query, [document_status](int document_id, DocumentStatus status, int rating){ return status == document_status; });
+		return FindTopDocuments(raw_query, [document_status](int document_id, DocumentStatus status, int rating){ 
+            return status == document_status; 
+        });
 	}
 
 	vector<Document> FindTopDocuments(const string& raw_query) const {
@@ -183,7 +186,7 @@ public:
 
     // Вернуть количество документов
     int GetDocumentCount() const {
-        return documents_extra.size();
+        return documents_extra_.size();
     }
 
 
@@ -224,7 +227,7 @@ private:
         }
 
         // Возвращаем результат
-        return {matched_words, documents_extra.at(document_id).status};
+        return {matched_words, documents_extra_.at(document_id).status};
     }
     
     // Проверяет, является ли слово стоп-словом
@@ -233,7 +236,7 @@ private:
         return stop_words_.count(word) > 0;
     }
     
-    // Возвращает вектор содержимое документа без стоп слов
+    // Возвращает содержимое документа без стоп слов
     // Параметры - содержимое документа
     vector<string> SplitIntoWordsNoStop(const string& text) const {
         vector<string> words;
@@ -255,7 +258,7 @@ private:
         return rating_sum / static_cast<int>(ratings.size());
     }
 
-    // Структура для хранения информации о плюс- и минус-словах
+    // Структура для хранения информации о слове
     struct QueryWord {
         string data;
         bool is_minus;
@@ -263,7 +266,7 @@ private:
     };
     
     // Распределить слово в запросе в множества плюс- или минус-слов
-    // Параметры - вектор рейтингов
+    // Параметры - слово запроса
     QueryWord ParseQueryWord(string text) const {
         bool is_minus = false;
         if (text[0] == '-') {
@@ -277,7 +280,7 @@ private:
         };
     }
     
-    // Структура для хранения плюс- и минус слов для запроса
+    // Структура для хранения множеств плюс- и минус слов для запроса
     struct Query {
         set<string> plus_words;
         set<string> minus_words;
@@ -337,13 +340,13 @@ private:
             }
         }
 
-        // Подготавливаем результат для возврата информации о всех документах
+        // Подготавливаем результат для возврата информации о всех документах по запросу
         vector<Document> matched_documents;
         for (const auto [document_id, relevance] : document_to_relevance) {
             matched_documents.push_back({
                 document_id,
                 relevance,
-                documents_extra.at(document_id).rating
+                documents_extra_.at(document_id).rating
             });
         }
 
