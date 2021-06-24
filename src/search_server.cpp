@@ -53,7 +53,6 @@ vector<string> SplitIntoWords(const string& text) {
 
 
 
-
 // ================================= Документ ================================= //
  
 // Структура Document - для удобства хранения необходимой информации о документе
@@ -70,7 +69,6 @@ enum class DocumentStatus {
     BANNED,
     REMOVED,
 };
-
 
 
 
