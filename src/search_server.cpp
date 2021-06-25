@@ -148,7 +148,7 @@ public:
         // Получаем все документы по запросу и предикату
         auto matched_documents = FindAllDocuments(query, filter);
 		
-		// Сортируем сначала по релевантности, после по рейтингу
+	// Сортируем сначала по релевантности, после по рейтингу
         auto& documents_for_status = documents_extra_;         
         sort(matched_documents.begin(), matched_documents.end(), [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
             if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
@@ -169,7 +169,7 @@ public:
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus document_status) const {
         return FindTopDocuments(raw_query, [document_status](int document_id, DocumentStatus status, int rating) { 
             return status == document_status; 
-        });
+    	});
 	}
 
 	vector<Document> FindTopDocuments(const string& raw_query) const {
