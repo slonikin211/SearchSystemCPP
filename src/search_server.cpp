@@ -1,6 +1,6 @@
 // Пак Георгий Сергеевич - студент Яндекс Практикума на курсе "Разработчик С++"
 // Проект оформлен 25.06.2021
-// Исправлены стилистика кода и проделана оптимизация 25.06.2021
+// Исправлена стилистика кода и проделана оптимизация 25.06.2021
 
 #include <algorithm>
 #include <cmath>
@@ -168,8 +168,7 @@ public:
     }
 
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus document_status) const {
-        return FindTopDocuments(raw_query, 
-        [document_status](int document_id, DocumentStatus status, int rating) { 
+        return FindTopDocuments(raw_query, [document_status](int document_id, DocumentStatus status, int rating) { 
             return status == document_status; 
         });
 	}
@@ -185,7 +184,6 @@ public:
 
 
 private: 
-
     // Вернуть информацию о значимых словах в документе
     // Необходимо учитывать только плюс-слова, если встретилось
     // хотя бы одно минус-слово - вернуть вектор слов пустым вместе 
@@ -274,7 +272,7 @@ private:
         };
     }
     
-    // Структура для хранения множеств плюс- и минус слов для запроса
+    // Структура для хранения множеств плюс- и минус-слов для запроса
     struct Query {
         set<string> plus_words;
         set<string> minus_words;
