@@ -1,6 +1,7 @@
 // Пак Георгий Сергеевич - студент Яндекс Практикума на курсе "Разработчик С++"
 // Проект оформлен 25.06.2021
 // Исправлена стилистика кода и проделана оптимизация 25.06.2021
+// Финальная оптимизация кода. Теперь фильтр используется еще при проверке на плюс слова, чтобы не тратить лишние ресурсы
 
 #include <algorithm>
 #include <cmath>
@@ -315,10 +316,16 @@ private:
 
             // Находим IDF слова ...
             const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
-
-            // ... и считаем TF-IDF
+            
+            // Фильтруем документы по плюс словам (по слову находим словарь документов, где ключ - ИЛ документа
             for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) {
-                document_to_relevance[document_id] += term_freq * inverse_document_freq;
+                // Для быстрого доступа к дополнительной информации документа 
+                const auto& document_extra_data = documents_extra_.at(document_id);
+
+                // Если документ проходит через фильтр, считаем TF-IDF
+                if (filter(document_id, document_extra_data.status, document_extra_data.rating)) {
+                    document_to_relevance[document_id] += term_freq * inverse_document_freq;
+                }
             }
         }
         
@@ -332,16 +339,14 @@ private:
             }
         }
 
-        // Подготавливаем результат для возврата информации о всех документах по запросу, также фильруем
+        // Подготавливаем результат для возврата информации о всех документах по запросу, также фильтруем
         vector<Document> matched_documents;
         for (const auto [document_id, relevance] : document_to_relevance) {
-            if (filter(document_id, documents_extra_.at(document_id).status, documents_extra_.at(document_id).rating)) {
-                matched_documents.push_back({
-                    document_id,
-                    relevance,
-                    documents_extra_.at(document_id).rating
-                });
-            }
+            matched_documents.push_back({
+                document_id,
+                relevance,
+                documents_extra_.at(document_id).rating
+            });
         }
 
         // Возвращаем все документы по запросу
