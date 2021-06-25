@@ -1,5 +1,6 @@
 // Пак Георгий Сергеевич - студент Яндекс Практикума на курсе "Разработчик С++"
 // Проект оформлен 25.06.2021
+// Исправлены стилистика кода и проделана оптимизация 25.06.2021
 
 #include <algorithm>
 #include <cmath>
@@ -117,10 +118,10 @@ public:
     // Добавить документ
     // Параметры - ИД документа, содержимое документа, статус документа, рейтинги документа
     void AddDocument(int document_id, const string& document, DocumentStatus status, const vector<int>& ratings) {
-        // Сохраняем содержимое документа без стоп слов
+        // Сохраняем содержимое документа без стоп-слов
         const vector<string> words = SplitIntoWordsNoStop(document);
 
-        // Находим долю 1 слова в документа
+        // Находим долю 1 слова в документе
         const double inv_word_count = 1.0 / words.size();
 
         // Сохраняем данные о документе в нужном формате (нужно для TF-IDF)
@@ -139,30 +140,32 @@ public:
     // Найти топ документы. Используется шаблон и его специализации
     // Параметры - запрос
     // Дополнительные параметры (специализация) - статус документа | функция-предикат
-	template <typename Filter>
+    template <typename Filter>
     vector<Document> FindTopDocuments(const string& raw_query, Filter filter) const {            
         // Получаем запрос с плюс- и минус-словами
-		const Query query = ParseQuery(raw_query);
-
-		// Получаем все документы, в matched_documents будем сохранять отфильтрованные
+        const Query query = ParseQuery(raw_query);
+        
+        // Получаем все документы, в matched_documents будем сохранять отфильтрованные
         auto all_documents = FindAllDocuments(query);
         vector<Document> matched_documents;
 
-		// Фильтруем документы
-		for (const auto& document : all_documents)
-			if (filter(document.id, documents_extra_.at(document.id).status, document.rating))
-				matched_documents.push_back(document);
+        // Фильтруем документы
+        for (const auto& document : all_documents) {
+            if (filter(document.id, documents_extra_.at(document.id).status, document.rating)) {
+                matched_documents.push_back(document);
+            }
+        }
 		
 		// Сортируем сначала по релевантности, после по рейтингу
-		auto& documents_for_status = documents_extra_;         
+        auto& documents_for_status = documents_extra_;         
         sort(matched_documents.begin(), matched_documents.end(),
-            [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
-                if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
-                    return lhs.rating > rhs.rating;
-                } else {
-                    return lhs.relevance > rhs.relevance;
-                }
-             });
+        [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
+            if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+                return lhs.rating > rhs.rating;
+            } else {
+                return lhs.relevance > rhs.relevance;
+            }
+        });
 
         // Не забываем про ограничение выводимых документов в топе
         if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) {
@@ -173,7 +176,8 @@ public:
     }
 
 	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus document_status) const {
-		return FindTopDocuments(raw_query, [document_status](int document_id, DocumentStatus status, int rating){ 
+        return FindTopDocuments(raw_query, 
+        [document_status](int document_id, DocumentStatus status, int rating) { 
             return status == document_status; 
         });
 	}
@@ -324,7 +328,7 @@ private:
 
             // ... и считаем TF-IDF
             for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) {
-				document_to_relevance[document_id] += term_freq * inverse_document_freq;
+                document_to_relevance[document_id] += term_freq * inverse_document_freq;
             }
         }
         
