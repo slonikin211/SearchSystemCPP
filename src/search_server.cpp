@@ -166,15 +166,15 @@ public:
         return matched_documents;
     }
 
-	vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus document_status) const {
+    vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus document_status) const {
         return FindTopDocuments(raw_query, [document_status](int document_id, DocumentStatus status, int rating) { 
             return status == document_status; 
     	});
-	}
+    }
 
-	vector<Document> FindTopDocuments(const string& raw_query) const {
+    vector<Document> FindTopDocuments(const string& raw_query) const {
         return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
-	}
+    }
 
     // Вернуть количество документов
     int GetDocumentCount() const {
