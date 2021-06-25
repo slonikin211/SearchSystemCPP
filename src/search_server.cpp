@@ -150,8 +150,7 @@ public:
 		
 		// Сортируем сначала по релевантности, после по рейтингу
         auto& documents_for_status = documents_extra_;         
-        sort(matched_documents.begin(), matched_documents.end(),
-        [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
+        sort(matched_documents.begin(), matched_documents.end(), [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
             if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
                 return lhs.rating > rhs.rating;
             } else {
@@ -174,7 +173,7 @@ public:
 	}
 
 	vector<Document> FindTopDocuments(const string& raw_query) const {
-		return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
+        return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 	}
 
     // Вернуть количество документов
