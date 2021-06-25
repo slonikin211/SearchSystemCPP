@@ -145,16 +145,8 @@ public:
         // Получаем запрос с плюс- и минус-словами
         const Query query = ParseQuery(raw_query);
         
-        // Получаем все документы, в matched_documents будем сохранять отфильтрованные
-        auto all_documents = FindAllDocuments(query);
-        vector<Document> matched_documents;
-
-        // Фильтруем документы
-        for (const auto& document : all_documents) {
-            if (filter(document.id, documents_extra_.at(document.id).status, document.rating)) {
-                matched_documents.push_back(document);
-            }
-        }
+        // Получаем все документы по запросу и предикату
+        auto matched_documents = FindAllDocuments(query, filter);
 		
 		// Сортируем сначала по релевантности, после по рейтингу
         auto& documents_for_status = documents_extra_;         
@@ -311,9 +303,10 @@ private:
         return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
     }
 
-    // Найти все документы в SearchServer по запросу
+    // Найти все документы в SearchServer по запросу. Filter для фильтрация документов (предикат)
     // Параметры - запрос
-    vector<Document> FindAllDocuments(const Query& query) const {
+    template <typename Filter>
+    vector<Document> FindAllDocuments(const Query& query, Filter filter) const {
         // Релевантность документов
         map<int, double> document_to_relevance;
 
@@ -332,7 +325,7 @@ private:
             }
         }
         
-        // Удаляем документы с минус-словами из результата
+        // Удаляем документы с минус-словами из результата,
         for (const string& word : query.minus_words) {
             if (word_to_document_freqs_.count(word) == 0) {
                 continue;
@@ -342,14 +335,16 @@ private:
             }
         }
 
-        // Подготавливаем результат для возврата информации о всех документах по запросу
+        // Подготавливаем результат для возврата информации о всех документах по запросу, также фильруем
         vector<Document> matched_documents;
         for (const auto [document_id, relevance] : document_to_relevance) {
-            matched_documents.push_back({
-                document_id,
-                relevance,
-                documents_extra_.at(document_id).rating
-            });
+            if (filter(document_id, documents_extra_.at(document_id).status, documents_extra_.at(document_id).rating)) {
+                matched_documents.push_back({
+                    document_id,
+                    relevance,
+                    documents_extra_.at(document_id).rating
+                });
+            }
         }
 
         // Возвращаем все документы по запросу

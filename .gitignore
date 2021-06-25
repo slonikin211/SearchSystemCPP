@@ -1,3 +1,4 @@
 /.vscode
 /temp
-/test_server.d
+/search_server.d
+/src/search_server
