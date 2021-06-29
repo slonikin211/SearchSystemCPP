@@ -2,3 +2,11 @@
 /temp
 /search_server.d
 /src/search_server
+
+# binary apps
+unit_tests
+
+
+*.d
+*.o
+/obj/*.o
