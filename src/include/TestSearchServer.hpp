@@ -14,6 +14,12 @@
 
 namespace Test_SearchServer
 {
+    // Функция для сравнения двух чисел double
+    bool fequal(const double num1, const double num2)
+    {
+        return std::abs(num1 - num2) < 0.0001;
+    }
+
     // Тест-функция для макроса ASSERT
     template <typename T>
     void AssertImpl(const T& t, const std::string& t_str, const std::string& file, const std::string& func,
@@ -256,7 +262,7 @@ namespace Test_SearchServer
     // Тест на поиск документов с заданным статусом
     void TestFindDocumentByStatus()
     {
-        const std::string stop_words = "и в на"s;
+        const std::string stop_words = "и в на";
         const int doc_id1 = 1, doc_id2 = 2, doc_id3 = 3;
         const std::string content1 = "белый кот и модный ошейник", content2 = "пушистый кот пушистый хвост", content3 = "ухоженный пёс выразительные глаза";
         const std::string query = "пушистый ухоженный кот";
@@ -321,9 +327,9 @@ namespace Test_SearchServer
             ASSERT_EQUAL(doc2.rating, 3);
 
             const double EPS = 0.0001;
-            ASSERT(std::abs(doc0.relevance - 0.650672) < EPS);
-            ASSERT(std::abs(doc1.relevance - 0.274653) < EPS);
-            ASSERT(std::abs(doc2.relevance - 0.101366) < EPS);
+            ASSERT(fequal(doc0.relevance, 0.650672));
+            ASSERT(fequal(doc1.relevance, 0.274653));
+            ASSERT(fequal(doc2.relevance, 0.101366));
         }
     }
 
