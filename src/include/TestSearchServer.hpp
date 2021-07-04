@@ -326,7 +326,6 @@ namespace Test_SearchServer
             ASSERT_EQUAL(doc2.rating, 5);
             ASSERT_EQUAL(doc2.rating, 3);
 
-            const double EPS = 0.0001;
             ASSERT(fequal(doc0.relevance, 0.650672));
             ASSERT(fequal(doc1.relevance, 0.274653));
             ASSERT(fequal(doc2.relevance, 0.101366));
