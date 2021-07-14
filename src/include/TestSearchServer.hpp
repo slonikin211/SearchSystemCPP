@@ -83,7 +83,7 @@ namespace Test_SearchServer
 
         // Документы со стоп-словами находятся
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
             const auto found_docs = server.FindTopDocuments("in");
             ASSERT_EQUAL(found_docs.size(), 1u);
@@ -93,8 +93,7 @@ namespace Test_SearchServer
 
         // Документы по запросу, содержищие стоп-слова, не находятся
         {
-            SearchServer server;
-            server.SetStopWords("in the");
+            SearchServer server("in the");
             server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
             ASSERT_HINT(server.FindTopDocuments("in").empty(), "Stop words must be excluded from documents");
         }
@@ -110,7 +109,7 @@ namespace Test_SearchServer
         // Проверяем, что если содержимое документа не пересекается с запросом, то в результате выполнения запроса
         // ничего не находится
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
             const auto found_docs = server.FindTopDocuments("and");
             ASSERT_EQUAL(found_docs.size(), 0u);
@@ -119,7 +118,7 @@ namespace Test_SearchServer
         // Проверяем, что добавленный документ, отличный от ACTUAL, не будет находиться, даже
         // если есть пересечения по словам
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id, content, DocumentStatus::BANNED, ratings);
             const auto found_docs = server.FindTopDocuments("cat in the");
             ASSERT_EQUAL(found_docs.size(), 0u);
@@ -128,7 +127,7 @@ namespace Test_SearchServer
         // Проверяем, что документ, отличный от ACTUAL, будет находиться при условии
         // что запрос содержит статус документа в различных видах
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id, content, DocumentStatus::BANNED, ratings);
             const auto found_docs = server.FindTopDocuments("cat in", DocumentStatus::BANNED);
             ASSERT_EQUAL(found_docs.size(), 1u);
@@ -144,7 +143,7 @@ namespace Test_SearchServer
 
         // Проверяем, что запрос выполняется по умолчанию
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
             const auto found_docs = server.FindTopDocuments("cat in");
             ASSERT_EQUAL(found_docs.size(), 1u);
@@ -160,9 +159,9 @@ namespace Test_SearchServer
         const std::string content1 = "cat in the city", content2 = "bee in the boat";
         const std::vector<int> ratings1 = {1, 2, 3}, ratings2 = {-1, -2, -3};
         
-        // Проверяем, что документ без минусов слов находится, а с минус-словами - нет
+        // Проверяем, что документ без минус слов находится, а с минус-словами - нет
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id_1, content1, DocumentStatus::ACTUAL, ratings1);
             server.AddDocument(doc_2, content2, DocumentStatus::ACTUAL, ratings2);
             const auto found_docs = server.FindTopDocuments("in the -bee");
@@ -181,7 +180,7 @@ namespace Test_SearchServer
         
         // Проверка на полное соответсвие документов запросу 
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, ratings);
             server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, ratings);
             server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings);
@@ -196,7 +195,7 @@ namespace Test_SearchServer
         
         // Проверка на пустой вектор, если документы содержат минус-слова
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, ratings);
 
             const auto found_docs = server.FindTopDocuments("-in the -dog");
@@ -215,7 +214,7 @@ namespace Test_SearchServer
 
         // Проверка на сортировку по релевантности документов (заранее посчитано)
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
             server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
             server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, {5, 5, 5});
@@ -247,7 +246,7 @@ namespace Test_SearchServer
 
         // Проверка на подсчет среднего рейтинга
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
             
             const auto found_documents = server.FindTopDocuments("cat in the");
@@ -269,7 +268,7 @@ namespace Test_SearchServer
 
         // Проверка на статус по умолчанию
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
             server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
             server.AddDocument(doc_id3, content3, DocumentStatus::BANNED, {5, 5, 5});
@@ -284,7 +283,7 @@ namespace Test_SearchServer
 
         // Проверка на статус по заданному напрямую в запросе
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
             server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
             server.AddDocument(doc_id3, content3, DocumentStatus::BANNED, {5, 5, 5});
@@ -307,7 +306,7 @@ namespace Test_SearchServer
 
         // Проверка на сортировку по релевантности документов (заранее посчитано)
         {
-            SearchServer server;
+            SearchServer server("");
             server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
             server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
             server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, {5, 5, 5});
