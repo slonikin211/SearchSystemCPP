@@ -94,9 +94,6 @@ enum class DocumentStatus {
 
 class SearchServer {
 public:
-    // Невалидное значение документа. Правильный диапазон значений документа [0, doc_count)
-    inline static constexpr int INVALID_DOCUMENT_ID = -1;
-
     // Конструктор, который принимает контейнер со стоп-словами
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words) {
