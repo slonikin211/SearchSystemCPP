@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <stdexcept>
 
 // Максимальное количество документов в результате поиска
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
@@ -54,9 +55,18 @@ std::vector<std::string> SplitIntoWords(const std::string& text) {
  
 // Структура Document - для удобства хранения необходимой информации о документе
 struct Document {
-    int id;
-    double relevance;
-    int rating;
+    int id = 0;
+    double relevance = 0.0;
+    int rating = 0;
+
+    // Конструкторы для инициализации документа
+    Document() = default;
+
+    Document(int id, double relevance, int rating)
+        : id(id)
+        , relevance(relevance)
+        , rating(rating) {
+    }
 };
 
 // Перчисляемый класс DocumentStatus для хранения информации о статусе документа
@@ -83,6 +93,37 @@ enum class DocumentStatus {
 */
 
 class SearchServer {
+public:
+    // Невалидное значение документа. Правильный диапазон значений документа [0, doc_count)
+    inline static constexpr int INVALID_DOCUMENT_ID = -1;
+
+    // Конструктор, который принимает контейнер со стоп-словами
+    template <typename StringContainer>
+    explicit SearchServer(const StringContainer& stop_words) {
+        for (const string& str : stop_words) {
+            if (!str.empty()) {     // строка должна быть непустой ...
+                if (IsValidWord(str)) {     // ... и не должна содержать спец символы
+                    stop_words_.insert(str);
+                }
+                else {
+                    throw std::invalid_argument("В строке содержатся специальные символы");
+                }
+            }
+        }
+    }
+
+    // Конструктор, который принимает строку (string) из стоп слов
+    explicit SearchServer(const string& stop_words_text)
+        : SearchServer(SplitIntoWords(stop_words_text))
+    {
+    }
+
+    // Конструктор, который принимает строку (const char*) из стоп слов
+    explicit SearchServer(const char* stop_words_text)
+        : SearchServer(SplitIntoWords(stop_words_text))
+    {
+    }
+
 private:
     // Структура для хранения дополнительной информации о документе: рейтинг и статус
     struct DocumentData {
@@ -100,20 +141,25 @@ private:
     // Структура данных для хранения дополнительной информации о документах
     std::map<int, DocumentData> documents_extra_;
 
+    // Кол-во документов
+    size_t document_count = 0;
 
-public:
-    // Установить стоп-слова
-    // Параметры - строка стоп-слов
-    void SetStopWords(const std::string& text) {
-        // Перебериаем слова и сохраняем в множество stop_words_
-        for (const std::string& word : SplitIntoWords(text)) {
-            stop_words_.insert(word);
-        }
-    }    
+    // История добавления документов (нужно для DocumentGetId(int index))
+    std::vector<int> document_ids;
+
+public: 
     
     // Добавить документ
     // Параметры - ИД документа, содержимое документа, статус документа, рейтинги документа
     void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings) {
+        // Проверка id документа (неотрицательный и нет документа с таким же id)
+        if (document_id < 0 || documents_extra_.count(document_id)) {
+            throw std::invalid_argument("Некорректный id документа");
+        }
+        if (!IsValidWord(document)) {
+            throw std::invalid_argument("Документ содержит специальные символы");
+        }
+
         // Сохраняем содержимое документа без стоп-слов
         const std::vector<std::string> words = SplitIntoWordsNoStop(document);
 
@@ -131,6 +177,10 @@ public:
                 ComputeAverageRating(ratings), 
                 status
             });
+    
+        // Сохраняем документ в историю документов
+        document_ids.push_back(document_id);
+        ++document_count;
     }
 
     // Найти топ документы. Используется шаблон и его специализации
@@ -174,11 +224,14 @@ public:
 
     // Вернуть количество документов
     int GetDocumentCount() const {
-        return documents_extra_.size();
+        return document_count;
     }
 
+    int GetDocumentId(int index) const {
+        // Выброситься out_of_range, если индекс плохой
+        return document_ids.at(index);
+    }
 
-private: 
     // Вернуть информацию о значимых словах в документе
     // Необходимо учитывать только плюс-слова, если встретилось
     // хотя бы одно минус-слово - вернуть вектор слов пустым вместе 
@@ -217,6 +270,7 @@ private:
         return {matched_words, documents_extra_.at(document_id).status};
     }
     
+private: 
     // Проверяет, является ли слово стоп-словом
     // Параметры - слово
     bool IsStopWord(const std::string& word) const {
@@ -243,6 +297,14 @@ private:
             rating_sum += rating;
         }
         return rating_sum / static_cast<int>(ratings.size());
+    }
+
+    // Проверяет наличие спецсимволов в строке
+    static bool IsValidWord(const string& word) {
+        // A valid word must not contain special characters
+        return none_of(word.begin(), word.end(), [](char c) {
+            return c >= '\0' && c < ' ';
+        });
     }
 
     // Структура для хранения информации о слове
@@ -276,6 +338,47 @@ private:
     // Спарсить строку в запрос
     // Параметры - строка с запросом
     Query ParseQuery(const std::string& text) const {
+        // Проверяем запрос на:
+        // 1. Спец. символы
+        // 2. Более 1 минуса перед минус-словом (если минус в середине слово, то все ок)
+        // 3. После минуса нет текста
+
+        // 1. Спец символы
+        if (!IsValidWord(text)) {
+            throw invalid_argument("В строке содержатся специальные символы");
+        }
+
+        // 2. Несколько минусов подряд
+        const size_t size = text.size();
+        for (size_t i = 1u; i + 1u < size; ++i) {// Берем не всю строку, а -1 с каждый стороны, чтобы можно было обращаться к соседям ...
+            if (text[i] == '-') {
+                // Минус вокруг минуса
+                if (text[i - 1u] == '-' || text [i + 1u] == '-') {
+                    throw std::invalid_argument("Несколько минусов подряд");
+                }
+                // 3.1. После минуса пробел
+                if (text[i + 1u] == ' ') {
+                    throw std::invalid_argument("После минуса пусто");
+                }
+            }
+        }
+        // ... Ну и проверяем граничные случаи отдельно
+        if (text.size() == 1u) {
+            if (text[0u] == '-') {
+                throw std::invalid_argument("В запросе только минус без ничего");
+            }
+        }
+        if (text.size() >= 2u) {
+            // В начале минус-пробел
+            if (text[0u] == '-' && text[1u] == ' ') {
+                throw std::invalid_argument("После минуса пусто");
+            }
+            // 3.2. В конце минус
+            if (text[size - 1u] == '-') {
+                throw std::invalid_argument("После минуса пусто");
+            }
+        }
+
         Query query;
         for (const std::string& word : SplitIntoWords(text)) {
             const QueryWord query_word = ParseQueryWord(word);
