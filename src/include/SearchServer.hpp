@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include <stdexcept>
+#include <cctype>
 
 // Максимальное количество документов в результате поиска
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
@@ -49,6 +50,13 @@ std::vector<std::string> SplitIntoWords(const std::string& text) {
     return words;
 }
 
+bool IsValidWord(const string& word) {
+    // A valid word must not contain special characters
+    return none_of(word.begin(), word.end(), [](unsigned char c) {
+        return std::iscntrl(c);
+    });
+}
+
 
 
 // ================================= Документ ================================= //
@@ -86,7 +94,7 @@ enum class DocumentStatus {
     используя ранжирование TF-IDF
     ----------------------------------------------------------------------------------
     Имеет следующий интерфейс:
-    1. SetStopWords - устанавливает стоп-слов, которые просто игнорируются в документах
+    1. Конструктор - устанавливает стоп-слова, которые просто игнорируются в документах
     2. AddDocument - добавляет документ в SearchServer, а также его рейтинг
     3. FindTopDocuments - выводит топ документов (до 5) по запросу
     4. GetDocumentCount - возвращает информацию о кол-ве документов
@@ -139,10 +147,10 @@ private:
     std::map<int, DocumentData> documents_extra_;
 
     // Кол-во документов
-    size_t document_count = 0;
+    size_t document_count_ = 0;
 
     // История добавления документов (нужно для DocumentGetId(int index))
-    std::vector<int> document_ids;
+    std::vector<int> document_ids_;
 
 public: 
     
@@ -176,8 +184,8 @@ public:
             });
     
         // Сохраняем документ в историю документов
-        document_ids.push_back(document_id);
-        ++document_count;
+        document_ids_.push_back(document_id);
+        ++document_count_;
     }
 
     // Найти топ документы. Используется шаблон и его специализации
@@ -221,12 +229,12 @@ public:
 
     // Вернуть количество документов
     int GetDocumentCount() const {
-        return document_count;
+        return document_count_;
     }
 
     int GetDocumentId(int index) const {
         // Выброситься out_of_range, если индекс плохой
-        return document_ids.at(index);
+        return document_ids_.at(index);
     }
 
     // Вернуть информацию о значимых словах в документе
@@ -347,10 +355,10 @@ private:
 
         // 2. Несколько минусов подряд
         const size_t size = text.size();
-        for (size_t i = 1u; i + 1u < size; ++i) {// Берем не всю строку, а -1 с каждый стороны, чтобы можно было обращаться к соседям ...
+        for (size_t i = 0u; i + 1u < size; ++i) {// Берем не всю строку, а до -1 в конце, чтобы можно было обращаться к следующему элементу ...
             if (text[i] == '-') {
-                // Минус вокруг минуса
-                if (text[i - 1u] == '-' || text [i + 1u] == '-') {
+                // После минуса есть минус
+                if (text [i + 1u] == '-') {
                     throw std::invalid_argument("Несколько минусов подряд");
                 }
                 // 3.1. После минуса пробел
@@ -366,10 +374,6 @@ private:
             }
         }
         if (text.size() >= 2u) {
-            // В начале минус-пробел
-            if (text[0u] == '-' && text[1u] == ' ') {
-                throw std::invalid_argument("После минуса пусто");
-            }
             // 3.2. В конце минус
             if (text[size - 1u] == '-') {
                 throw std::invalid_argument("После минуса пусто");
