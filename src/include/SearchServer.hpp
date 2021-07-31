@@ -1,5 +1,3 @@
-#pragma once
-
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -50,9 +48,9 @@ std::vector<std::string> SplitIntoWords(const std::string& text) {
     return words;
 }
 
-bool IsValidWord(const string& word) {
+bool IsValidWord(const std::string& word) {
     // A valid word must not contain special characters
-    return none_of(word.begin(), word.end(), [](unsigned char c) {
+    return std::none_of(word.begin(), word.end(), [](unsigned char c) {
         return std::iscntrl(c);
     });
 }
@@ -105,7 +103,7 @@ public:
     // Конструктор, который принимает контейнер со стоп-словами
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words) {
-        for (const string& str : stop_words) {
+        for (const std::string& str : stop_words) {
             if (!str.empty()) {     // строка должна быть непустой ...
                 if (IsValidWord(str)) {     // ... и не должна содержать спец символы
                     stop_words_.insert(str);
@@ -118,7 +116,7 @@ public:
     }
 
     // Конструктор, который принимает строку (string) из стоп слов
-    explicit SearchServer(const string& stop_words_text)
+    explicit SearchServer(const std::string& stop_words_text)
         : SearchServer(SplitIntoWords(stop_words_text))
     {
     }
@@ -305,9 +303,9 @@ private:
     }
 
     // Проверяет наличие спецсимволов в строке
-    static bool IsValidWord(const string& word) {
+    static bool IsValidWord(const std::string& word) {
         // A valid word must not contain special characters
-        return none_of(word.begin(), word.end(), [](char c) {
+        return std::none_of(word.begin(), word.end(), [](char c) {
             return c >= '\0' && c < ' ';
         });
     }
@@ -350,7 +348,7 @@ private:
 
         // 1. Спец символы
         if (!IsValidWord(text)) {
-            throw invalid_argument("В строке содержатся специальные символы");
+            throw std::invalid_argument("В строке содержатся специальные символы");
         }
 
         // 2. Несколько минусов подряд
