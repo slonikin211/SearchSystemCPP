@@ -1,3 +1,5 @@
+#pragna once
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
