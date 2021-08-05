@@ -54,6 +54,12 @@ std::vector<std::string> SplitIntoWords(const std::string& text) {
 
 // Максимальное количество документов в результате поиска
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+bool IsValidWord(const std::string& word) {
+    // A valid word must not contain special characters
+    return std::none_of(word.begin(), word.end(), [](unsigned char c) {
+        return std::iscntrl(c);
+    });
+}
 
 
 
@@ -103,7 +109,7 @@ public:
     // Конструктор, который принимает контейнер со стоп-словами
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words) {
-        for (const string& str : stop_words) {
+        for (const std::string& str : stop_words) {
             if (!str.empty()) {     // строка должна быть непустой ...
                 if (IsValidWord(str)) {     // ... и не должна содержать спец символы
                     stop_words_.insert(str);
@@ -305,7 +311,7 @@ private:
     // Проверяет наличие спецсимволов в строке
     static bool IsValidWord(const std::string& word) {
         // A valid word must not contain special characters
-        return none_of(word.begin(), word.end(), [](char c) {
+        return std::none_of(word.begin(), word.end(), [](char c) {
             return c >= '\0' && c < ' ';
         });
     }
