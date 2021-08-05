@@ -54,13 +54,6 @@ std::vector<std::string> SplitIntoWords(const std::string& text) {
 
 // Максимальное количество документов в результате поиска
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
-bool IsValidWord(const std::string& word) {
-    // A valid word must not contain special characters
-    return std::none_of(word.begin(), word.end(), [](unsigned char c) {
-        return std::iscntrl(c);
-    });
-}
-
 
 
 // ================================= Документ ================================= //
