@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+    Пагинатор - класс, использующий итераторы для разделения контейнеры на "страницы"
+    Конструктор - итератор begin, итератор end, размер страцниы page_size
+*/
+
+
 #include <iostream>
 #include <vector>
 #include <deque>
@@ -7,6 +13,9 @@
 
 #include "SearchServer.hpp"
 
+// Шаблонный класс "страница", типо итератор на начало страницы и на конец страницы
+// Последовательность IteratorRange может использоваться в распределении документов по страницам
+// при выводе результата запроса на поисковой системе
 template <typename Iterator>
 class IteratorRange {
 public:
@@ -33,8 +42,6 @@ private:
     size_t size_;
 };
 
-
-
 template <typename Iterator>
 std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range) {
     for (Iterator it = range.begin(); it != range.end(); ++it) {
@@ -43,6 +50,7 @@ std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range
     return out;
 }
 
+// Paginator - класс, который хранит страницы, т.е. вектор IteratorRange
 template <typename Iterator>
 class Paginator {
 public:
