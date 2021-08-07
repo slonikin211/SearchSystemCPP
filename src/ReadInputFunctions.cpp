@@ -1,6 +1,5 @@
-#include "ReadInputFunctions.hpp"
+#include "include/ReadInputFunctions.hpp"
 
-#include <string>
 #include <iostream>
 
 // Считывает строку

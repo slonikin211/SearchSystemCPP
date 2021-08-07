@@ -22,6 +22,8 @@ using namespace std;
 
 #include "include/SearchServer.hpp"         // Класс SearchServer из прошлого спринта
 #include "include/TestSearchServer.hpp"     // Тестирование SearchServer
+#include "include/Paginator.hpp"            // Для "страниц" в результатах запроса
+#include "include/RequestQueue.hpp"         // Очередь запросов
 
 int main() {
     SearchServer search_server("and in at"s);

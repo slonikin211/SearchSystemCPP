@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 // Считывает строку
 std::string ReadLine();
 

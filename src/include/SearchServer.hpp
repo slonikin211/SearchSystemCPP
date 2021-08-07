@@ -11,51 +11,12 @@
 #include <cctype>
 
 #include "ReadInputFunctions.hpp"   // Для чтения с потока cin
-//#include "StringProcessing.hpp"     // Для обработки строк
+#include "StringProcessing.hpp"     // Для обработки строк
 #include "Document.hpp"
-
-/*
-    Примечание:
-    При нормальном подключении #include "StringProcessing.hpp" возникает ошибка линковки undefined reference to
-    `SplitIntoWords(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
-    в местах вызова этой функции. Погуглил. Вот ссылки на то что пытался сделать, но ничего не помогло:
-    https://stackoverflow.com/questions/33394934/converting-std-cxx11string-to-stdstring
-    https://techoverflow.net/2021/04/11/how-to-fix-gcc-lots-of-undefined-reference-to-std-functions/
-    https://coderoad.ru/39539752/Использование-G-неопределенная-ссылка-std-Makefile
-    https://github.com/preshing/junction/issues/37
-    https://overcoder.net/q/866515/неопределенная-ссылка-на-процесс-std-cxx11-basicstring-при-компиляции-примеров
-    https://root-forum.cern.ch/t/problems-compiling-root-with-gcc-9-1/34423
-    
-    Насколько я понял, проблема заключается в том что, строки (обычные) не состыковаваются со строками std::string
-    при линковке из-за последней версии GCC. Чтобы решить проблему нужно использовать GCC 4.8 или более раннюю, но 
-    там нет функционала из C++17, который здесь активно используется, да переустанавливать компилятор на раннюю версию
-    не очень хочется. Застрял в тупике, не знаю как это правильно оформить
-
-    Временно насильно определил функцию SplitIntoWords в том же файле, где и вызывается
-    Надеюсь Вы мне поможете решить проблему
-*/
-
-// Распредялеят слова в строке в вектор
-std::vector<std::string> SplitIntoWords(const std::string& text) {
-    std::vector<std::string> words;
-    std::string word;
-    for (const char c : text) {
-        if (c == ' ') {
-            words.push_back(word);
-            word = "";
-        } else {
-            word += c;
-        }
-    }
-    words.push_back(word);
-    
-    return words;
-}
 
 
 // Максимальное количество документов в результате поиска
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
-
 
 
 // ================================= Поисковой сервер ================================= //
@@ -423,6 +384,3 @@ private:
         return matched_documents;
     }
 };
-
-#include "Paginator.hpp"            // Для "страниц" в результатах запроса
-#include "RequestQueue.hpp"         // Очередь запросов
