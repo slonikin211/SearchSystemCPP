@@ -12,6 +12,7 @@
 
 #include "ReadInputFunctions.hpp"   // Для чтения с потока cin
 //#include "StringProcessing.hpp"     // Для обработки строк
+#include "Document.hpp"
 
 /*
     Примечание:
@@ -54,33 +55,6 @@ std::vector<std::string> SplitIntoWords(const std::string& text) {
 
 // Максимальное количество документов в результате поиска
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
-
-
-// ================================= Документ ================================= //
- 
-// Структура Document - для удобства хранения необходимой информации о документе
-struct Document {
-    int id = 0;
-    double relevance = 0.0;
-    int rating = 0;
-
-    // Конструкторы для инициализации документа
-    Document() = default;
-
-    Document(int id, double relevance, int rating)
-        : id(id)
-        , relevance(relevance)
-        , rating(rating) {
-    }
-};
-
-// Перечисляемый класс DocumentStatus для хранения информации о статусе документа
-enum class DocumentStatus {
-    ACTUAL,
-    IRRELEVANT,
-    BANNED,
-    REMOVED,
-};
 
 
 
