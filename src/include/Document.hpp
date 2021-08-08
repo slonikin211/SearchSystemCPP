@@ -4,17 +4,12 @@
 struct Document {
     int id;
     double relevance;
-    int rating ;
+    int rating;
 
     // Конструкторы для инициализации документа
     Document() = default;
 
-    Document(int id, double relevance, int rating)
-        : id(id)
-        , relevance(relevance)
-        , rating(rating) 
-    {
-    }
+    Document(int id, double relevance, int rating);
 };
 
 // Перечисляемый класс DocumentStatus для хранения информации о статусе документа

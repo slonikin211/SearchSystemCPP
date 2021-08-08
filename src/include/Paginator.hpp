@@ -2,14 +2,13 @@
 
 /*
     Пагинатор - класс, использующий итераторы для разделения контейнеры на "страницы"
-    Конструктор - итератор begin, итератор end, размер страцниы page_size
+    Конструктор - итератор begin, итератор end, размер страницы page_size
 */
 
 
 #include <iostream>
 #include <vector>
 #include <deque>
-#include <string>
 
 #include "SearchServer.hpp"
 
@@ -19,23 +18,11 @@
 template <typename Iterator>
 class IteratorRange {
 public:
-    IteratorRange(Iterator begin, Iterator end)
-        : first_(begin)
-        , last_(end)
-        , size_(distance(first_, last_)) {
-    }
+    IteratorRange(Iterator begin, Iterator end);
 
-    Iterator begin() const {
-        return first_;
-    }
-
-    Iterator end() const {
-        return last_;
-    }
-
-    size_t size() const {
-        return size_;
-    }
+    Iterator begin() const;
+    Iterator end() const;
+    size_t size() const;
 
 private:
     Iterator first_, last_;
@@ -43,46 +30,24 @@ private:
 };
 
 template <typename Iterator>
-std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range) {
-    for (Iterator it = range.begin(); it != range.end(); ++it) {
-        out << *it;
-    }
-    return out;
-}
+std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range);
 
 // Paginator - класс, который хранит страницы, т.е. вектор IteratorRange
 template <typename Iterator>
 class Paginator {
 public:
-    Paginator(Iterator begin, Iterator end, size_t page_size) {
-        for (size_t left = distance(begin, end); left > 0;) {
-            const size_t current_page_size = min(page_size, left);
-            const Iterator current_page_end = next(begin, current_page_size);
-            pages_.push_back({begin, current_page_end});
+    Paginator(Iterator begin, Iterator end, size_t page_size);
 
-            left -= current_page_size;
-            begin = current_page_end;
-        }
-    }
-
-    auto begin() const {
-        return pages_.begin();
-    }
-
-    auto end() const {
-        return pages_.end();
-    }
-
-    size_t size() const {
-        return pages_.size();
-    }
+    auto begin() const;
+    auto end() const;
+    size_t size() const;
 
 private:
     std::vector<IteratorRange<Iterator>> pages_;
 };
 
 template <typename Container>
-auto Paginate(const Container& c, size_t page_size) {
-    return Paginator(begin(c), end(c), page_size);
-}
+auto Paginate(const Container& c, size_t page_size);
 
+// Явное инстанцирование
+// ......
