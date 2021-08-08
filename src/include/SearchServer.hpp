@@ -34,7 +34,7 @@ const int MAX_RESULT_DOCUMENT_COUNT = 5;
     3. FindTopDocuments - выводит топ документов (до 5) по запросу
     4. GetDocumentCount - возвращает информацию о кол-ве документов
 */
-
+template <typename StringContainer>
 class SearchServer {
 public:
     // Конструктор, который принимает контейнер со стоп-словами
@@ -141,4 +141,5 @@ private:
 };
 
 // Explicit instantiation
-//template std::vector<Document> SearchServer::FindTopDocuments();    // Использует предикат
+template class SearchServer<std::vector<std::string>>;
+template class SearchServer<std::set<std::string>>;
