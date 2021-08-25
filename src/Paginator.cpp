@@ -29,8 +29,10 @@ size_t IteratorRange<Iterator>::size() const
 }
 
 template <typename Iterator>
-std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range) {
-    for (Iterator it = range.begin(); it != range.end(); ++it) {
+std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range) 
+{
+    for (Iterator it = range.begin(); it != range.end(); ++it) 
+    {
         out << *it;
     }
     return out;
@@ -41,7 +43,8 @@ std::ostream& operator<<(std::ostream& out, const IteratorRange<Iterator>& range
 template <typename Iterator>
 Paginator<Iterator>::Paginator(Iterator begin, Iterator end, size_t page_size)
 {
-    for (size_t left = std::distance(begin, end); left > 0;) {
+    for (size_t left = std::distance(begin, end); left > 0;) 
+    {
         const size_t current_page_size = std::min(page_size, left);
         const Iterator current_page_end = std::next(begin, current_page_size);
         pages_.push_back({begin, current_page_end});
@@ -70,6 +73,7 @@ size_t Paginator<Iterator>::size() const
 }
 
 template <typename Container>
-auto Paginate(const Container& c, size_t page_size) {
+auto Paginate(const Container& c, size_t page_size) 
+{
     return Paginator(begin(c), end(c), page_size);
 }

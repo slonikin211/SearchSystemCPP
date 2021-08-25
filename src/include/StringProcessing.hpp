@@ -3,5 +3,5 @@
 #include <vector>
 #include <string>
 
-// Распредялеят слова в строке в вектор
+// Parse text into a vector of words
 std::vector<std::string> SplitIntoWords(const std::string& text);

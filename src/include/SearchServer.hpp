@@ -9,35 +9,33 @@
 #include <vector>
 #include <stdexcept>
 #include <cctype>
+#include <functional>
+
+#include "ReadInputFunctions.hpp"
+#include "StringProcessing.hpp"
+#include "Document.hpp"
 
 
-#include "ReadInputFunctions.hpp"   // Для чтения с потока cin
-#include "StringProcessing.hpp"     // Для обработки строк
-#include "Document.hpp"             // Класс "Дркумент"
-
-
-
-
-// Максимальное количество документов в результате поиска
+// Maximum amount of documents in the search result
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 
 
-// ================================= Поисковой сервер ================================= //
+// ================================= Search system ================================= //
 
 /*
-    SearchServer - класс, предназначенный для поиска актуальных документов по запросам,
-    используя ранжирование TF-IDF
+    SearchServer - class using TF-IDF algorithm for ranging documents
     ----------------------------------------------------------------------------------
-    Имеет следующий интерфейс:
-    1. Конструктор - устанавливает стоп-слова, которые просто игнорируются в документах
-    2. AddDocument - добавляет документ в SearchServer, а также его рейтинг
-    3. FindTopDocuments - выводит топ документов (до 5) по запросу
-    4. GetDocumentCount - возвращает информацию о кол-ве документов
+    Functionality:
+    1. Constructor - setting up stop-words which will be ingnored in documents
+    2. AddDocument - adding document data and document rating
+    3. FindTopDocuments - returning vector of found documents (up to MAX_RESULT_DOCUMENT_COUNT)
+    4. GetDocumentCount - returning amount of documents in the SearchServer
 */
-template <typename StringContainer>
-class SearchServer {
+
+class SearchServer 
+{
 public:
-    // Конструктор, который принимает контейнер со стоп-словами
+    // Param of constructor is a container of string words
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words);
 
@@ -80,7 +78,7 @@ public:
     // Параметры - запрос
     // Дополнительные параметры (специализация) - статус документа | функция-предикат
     template <typename Filter>
-    std::vector<Document> FindTopDocuments(const std::string& raw_query, Filter filter) const;
+    std::vector<Document> FindTopDocuments(const std::string& raw_query, Filter filter) const;    
     std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentStatus document_status) const;
     std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 
@@ -110,7 +108,8 @@ private:
     static bool IsValidWord(const std::string& word);
 
     // Структура для хранения информации о слове
-    struct QueryWord {
+    struct QueryWord 
+    {
         std::string data;
         bool is_minus;
         bool is_stop;
@@ -137,9 +136,62 @@ private:
     // Найти все документы в SearchServer по запросу. Filter для фильтрация документов (предикат)
     // Параметры - запрос
     template <typename Filter>
-    std::vector<Document> FindAllDocuments(const Query& query, Filter filter) const;
-};
+    std::vector<Document> FindAllDocuments(const Query& query, Filter filter) const
+    {
+        // Релевантность документов
+        std::map<int, double> document_to_relevance;
 
-// Explicit instantiation
-template class SearchServer<std::vector<std::string>>;
-template class SearchServer<std::set<std::string>>;
+        // Считаем релевантность документа используя TF-IDF
+        for (const std::string& word : query.plus_words) 
+        {
+            if (word_to_document_freqs_.count(word) == 0) 
+            {
+                continue;
+            }
+
+            // Находим IDF слова ...
+            const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
+            
+            // Фильтруем документы по плюс словам (по слову находим словарь документов, где ключ - ИД документа
+            for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) 
+            {
+                // Для быстрого доступа к дополнительной информации документа 
+                const auto& document_extra_data = documents_extra_.at(document_id);
+
+                // Если документ проходит через фильтр, считаем TF-IDF
+                if (filter(document_id, document_extra_data.status, document_extra_data.rating)) 
+                {
+                    document_to_relevance[document_id] += term_freq * inverse_document_freq;
+                }
+            }
+        }
+        
+        // Удаляем документы с минус-словами из результата,
+        for (const std::string& word : query.minus_words) 
+        {
+            if (word_to_document_freqs_.count(word) == 0) 
+            {
+                continue;
+            }
+            for (const auto document_to_erase : word_to_document_freqs_.at(word)) 
+            {
+                document_to_relevance.erase(document_to_erase.first);
+            }
+        }
+
+        // Подготавливаем результат для возврата информации о всех документах по запросу, также фильтруем
+        std::vector<Document> matched_documents;
+        for (const auto [document_id, relevance] : document_to_relevance) 
+        {
+            matched_documents.push_back(
+                {
+                    document_id,
+                    relevance,
+                    documents_extra_.at(document_id).rating
+                });
+        }
+
+        // Возвращаем все документы по запросу
+        return matched_documents;
+    }
+};

@@ -1,10 +1,8 @@
 #pragma once
 
-/*
-    RequestQueue - класс "очередь запросов", задача которого делать учет поступающих запросов
-    У запросов есть статусы (выполненные/невыполненные)
-    Запросы, которые не были выполнены слишком давно отправляются в небытие, уступая место новым
-*/
+// RequestQueue - class, whose task is to keep track of incoming requests
+// Requests have statuses (completed / unfulfilled)
+// Requests that have not been fulfilled for too long are sent into oblivion (lol), giving way to new ones 
 
 #include <vector>
 #include <string>
@@ -13,10 +11,12 @@
 #include "SearchServer.hpp"
 
 
-class RequestQueue {
+class RequestQueue 
+{
 public:
     explicit RequestQueue(const SearchServer& search_server);
-    // сделаем "обёртки" для всех методов поиска, чтобы сохранять результаты для нашей статистики
+
+    // Lets make "wrappers" for all search methods to save results for our statistics 
     template <typename DocumentPredicate>
     std::vector<Document> AddFindRequest(const std::string& raw_query, DocumentPredicate document_predicate);
 
@@ -25,7 +25,8 @@ public:
     std::vector<Document> AddFindRequest(const std::string& raw_query);
     int GetNoResultRequests() const;
 private:
-    struct QueryResult {
+    struct QueryResult 
+    {
         bool isEmpty;
     };
     const SearchServer& server_;

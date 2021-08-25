@@ -1,19 +1,21 @@
 #pragma once
  
-// Структура Document - для удобства хранения необходимой информации о документе
-struct Document {
+// Document - structure for storaging data of documents
+struct Document 
+{
     int id;
     double relevance;
     int rating;
 
-    // Конструкторы для инициализации документа
+    // Constructor for document initialization
     Document() = default;
 
     Document(int id, double relevance, int rating);
 };
 
-// Перечисляемый класс DocumentStatus для хранения информации о статусе документа
-enum class DocumentStatus {
+// Enum Class DocumentStatus with document states
+enum class DocumentStatus 
+{
     ACTUAL,
     IRRELEVANT,
     BANNED,

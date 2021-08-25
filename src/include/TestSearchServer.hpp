@@ -10,17 +10,17 @@
 #include <iostream>
 #include <tuple>
 
-#include "SearchServer.hpp"     // Класс поисковой системы для тестирования
+#include "SearchServer.hpp"     // SearchServer class for testing
 
 namespace Test_SearchServer
 {
-    // Функция для сравнения двух чисел double
+    // Comparing two numbers (double)
     bool fequal(const double num1, const double num2)
     {
-        return std::abs(num1 - num2) < 0.0001;
+        return std::abs(num1 - num2) < 0.0001;  // ... using epsilon
     }
 
-    // Тест-функция для макроса ASSERT
+    // Test function for macros ASSERT
     template <typename T>
     void AssertImpl(const T& t, const std::string& t_str, const std::string& file, const std::string& func,
         unsigned line, const std::string& hint) 
@@ -39,8 +39,7 @@ namespace Test_SearchServer
     #define ASSERT_HINT(expr, hint) AssertImpl((expr), #expr, __FILE__, __FUNCTION__, __LINE__, hint)
 
 
-
-    // Тест-функция для макроса ASSERT_EQUAL
+    // Test function for macros ASSERT_EQUAL
     template <typename T, typename U>
     void AssertEqualImpl(const T& t, const U& u, const std::string& t_str, const std::string& u_str, const std::string& file,
         const std::string& func, unsigned line, const std::string& hint) 
@@ -62,8 +61,7 @@ namespace Test_SearchServer
     #define ASSERT_EQUAL_HINT(a, b, hint) AssertEqualImpl((a), (b), #a, #b, __FILE__, __FUNCTION__, __LINE__, (hint))
 
 
-
-    // Функция для запуска теста через макрос RUN_TEST
+    // Function for launching tests RUN_TEST
     template <typename TestFunction>
     void RunTestImpl(TestFunction test_func, std::string test_function_string) {
         test_func();
@@ -73,9 +71,9 @@ namespace Test_SearchServer
     #define RUN_TEST(func)  RunTestImpl(func, #func);
 
 
-    // -------- Начало модульных тестов поисковой системы ----------
+    // -------- The begin of module tests for SearchServer ----------
 
-    // Тест проверяет, что поисковая система исключает стоп-слова при добавлении документов
+    // The test verifies that the search engine excludes stop words when adding documents 
     void TestExcludeStopWordsFromAddedDocumentContent() {
         const int doc_id = 1;
         const std::string content = "cat in the city";
@@ -99,7 +97,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Тест проверяет, что добавленный документ будет находиться по поисковому запросу, который содержит слова документа
+    // The test verifies that the added document will be found by a search query that contains the words of the document 
     void TestAddDocumentWithQueryWords()
     {
         const int doc_id = 1;
@@ -152,7 +150,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Тест проверят, что документы с минус-словами не входят в результат поиска
+    // The test verifies that documents with negative keywords are not included in the search result
     void TestMinusWordsNotInTheResult()
     {
         const int doc_id_1 = 1, doc_2 = 2;
@@ -171,7 +169,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Тест проверяет матчинг документов
+    // The test verifies documents matching
     void TestDocumentMatching()
     {
         const int doc_id1 = 1, doc_id2 = 2, doc_id3 = 3;
@@ -203,7 +201,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Тест на сортировку по релевантности
+    // The test verifies sorted result
     void TestFoundDocumentSortedByRelevance()
     {
         const std::string stop_words = "и в на";
@@ -237,7 +235,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Тест на вычисления рейтинга документа
+    // The test verifies rating calculation for documents
     void TestRatingOfTheDocument()
     {
         const int doc_id = 1;
@@ -256,9 +254,9 @@ namespace Test_SearchServer
         }
     }
 
-    // Тест на предикат реализован в AddDocument
+    // The test with predicate is realised in TestExcludeStopWordsFromAddedDocumentContent test
 
-    // Тест на поиск документов с заданным статусом
+    // The test verifies status of result documents
     void TestFindDocumentByStatus()
     {
         const std::string stop_words = "и в на";
@@ -295,7 +293,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Корректное вычисление релевантности системы
+    // The test verifies correct calcution of system relevance
     void TestCorrectRelevanceOfTheSystem()
     {
         const std::string stop_words = "и в на";
@@ -331,7 +329,7 @@ namespace Test_SearchServer
         }
     }
 
-    // Функция TestSearchServer является точкой входа для запуска тестов
+    // TestSearchServer is entry point for launching tests
     void TestSearchServer() {
         RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
         RUN_TEST(TestAddDocumentWithQueryWords);
@@ -343,6 +341,6 @@ namespace Test_SearchServer
         RUN_TEST(TestFindDocumentByStatus);
     }
 
-    // --------- Окончание модульных тестов поисковой системы -----------
+    // --------- The end of module tests for SearchServer -----------
 
 }

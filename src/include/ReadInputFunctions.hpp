@@ -2,8 +2,8 @@
 
 #include <string>
 
-// Считывает строку
+// Read line from console
 std::string ReadLine();
 
-// Считывает строку с числом
+// Read line with number from console
 int ReadLineWithNumber();

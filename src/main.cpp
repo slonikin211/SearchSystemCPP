@@ -1,29 +1,25 @@
-// Пак Георгий Сергеевич - студент Яндекс Практикума на курсе "Разработчик С++"
-// Проект оформлен 03.07.2021
-// Создание поисковой системы с использованием TF-IDF для ранжирования документов
-// Создание Фреймворка для тестирования поисковой системы
-// Обработка исключений
-// Использование пагинатора для "страниц" по результатам поиска
-// Распределение кода по файлам
+// Park George Sergeevich (slonikin211) - student of Yandex Practicum | C++ Developer
+// Start of the project 02.06.2021
+// Tasks:
+// Creating Search System with TF-IDF ranging of documents
+// Crearing framework for testing (TDD)
+// Exceptions
+// Using template iterators for Paginator
+// Template definition in a .cpp file (using explicit instanciation)
 
 
-/*
-    Примечание:
-    Поскольку в проекте использовались шаблоны, файлы .hpp содержат также реализацию
-    шаблонных классов => .cpp файлы с реализацией для них не нужны
 
-    В файле SearchServer в примечении описана проблема связанная с линковкой. Ее не смог решить
-    самостоятельно. Проверьте пожалуйста!
-*/
+// TODO: explicit FILTER in SearchServer class
+
+
 
 #include <iostream>
-
 using namespace std;
 
-#include "include/SearchServer.hpp"         // Класс SearchServer из прошлого спринта
-#include "include/TestSearchServer.hpp"     // Тестирование SearchServer
-#include "include/Paginator.hpp"            // Для "страниц" в результатах запроса
-#include "include/RequestQueue.hpp"         // Очередь запросов
+#include "include/SearchServer.hpp"
+#include "include/TestSearchServer.hpp"
+#include "include/Paginator.hpp"
+#include "include/RequestQueue.hpp"
 
 int main() {
     SearchServer search_server("and in at"s);
