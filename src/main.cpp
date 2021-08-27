@@ -1,16 +1,12 @@
 // Park George Sergeevich (slonikin211) - student of Yandex Practicum | C++ Developer
 // Start of the project 02.06.2021
+// Finish of the project development 02.08.2021
 // Tasks:
 // Creating Search System with TF-IDF ranging of documents
 // Crearing framework for testing (TDD)
 // Exceptions
 // Using template iterators for Paginator
 // Template definition in a .cpp file (using explicit instanciation)
-
-
-
-// TODO: explicit FILTER in SearchServer class
-
 
 
 #include <iostream>
@@ -22,25 +18,9 @@ using namespace std;
 #include "include/RequestQueue.hpp"
 
 int main() {
-    SearchServer search_server("and in at"s);
-    RequestQueue request_queue(search_server);
+     Test_SearchServer::TestSearchServer();
 
-    search_server.AddDocument(1, "curly cat curly tail"s, DocumentStatus::ACTUAL, {7, 2, 7});
-    search_server.AddDocument(2, "curly dog and fancy collar"s, DocumentStatus::ACTUAL, {1, 2, 3});
-    search_server.AddDocument(3, "big cat fancy collar "s, DocumentStatus::ACTUAL, {1, 2, 8});
-    search_server.AddDocument(4, "big dog sparrow Eugene"s, DocumentStatus::ACTUAL, {1, 3, 2});
-    search_server.AddDocument(5, "big dog sparrow Vasiliy"s, DocumentStatus::ACTUAL, {1, 1, 1});
-
-    // 1439 запросов с нулевым результатом
-    for (int i = 0; i < 1439; ++i) {
-        request_queue.AddFindRequest("empty request"s);
-    }
-    // все еще 1439 запросов с нулевым результатом
-    request_queue.AddFindRequest("curly dog"s);
-    // новые сутки, первый запрос удален, 1438 запросов с нулевым результатом
-    request_queue.AddFindRequest("big collar"s);
-    // первый запрос удален, 1437 запросов с нулевым результатом
-    request_queue.AddFindRequest("sparrow"s);
-    cout << "Total empty requests: "s << request_queue.GetNoResultRequests() << endl;
+    // If you see this line, all test are passed
+    cout << "Search server testing finished"s << endl;
     return 0;
 }

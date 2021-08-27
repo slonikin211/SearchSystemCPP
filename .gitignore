@@ -6,7 +6,7 @@
 # binary apps
 unit_tests
 
-
+# temp files
 *.d
 *.o
 /obj/*.o
