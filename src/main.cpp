@@ -3,7 +3,7 @@
 // Finish of the project development 02.08.2021
 // Tasks:
 // Creating Search System with TF-IDF ranging of documents
-// Crearing framework for testing (TDD)
+// Creating framework for testing (TDD)
 // Exceptions
 // Using template iterators for Paginator
 // Template definition in a .cpp file (using explicit instanciation)
@@ -20,7 +20,7 @@ using namespace std;
 int main() {
      Test_SearchServer::TestSearchServer();
 
-    // If you see this line, all test are passed
+    // If you see this line, all tests are passed
     cout << "Search server testing finished"s << endl;
     return 0;
 }
