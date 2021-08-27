@@ -31,7 +31,6 @@ Search engine on C++. The TF-IDF ranging algorithm is used to search documents b
 
 ### SearchServer class
 
-Пример обычного использования класса SearchServer
 
     #include <iostream>
     #include "include/SearchServer.hpp"
