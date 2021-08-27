@@ -39,75 +39,103 @@ public:
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words);
 
-    // Конструктор, который принимает строку (string) из стоп слов
+    // Constuructor that accepts the std::string with stop-words
     explicit SearchServer(const std::string& stop_words_text);
 
-    // Конструктор, который принимает строку (const char*) из стоп слов
+    // Constuructor that accepts the const char* with stop-words
     explicit SearchServer(const char* stop_words_text);
 
 private:
-    // Структура для хранения дополнительной информации о документе: рейтинг и статус
-    struct DocumentData {
+    // Structure for storing additional document data: rating and status
+    struct DocumentData 
+    {
         int rating;
         DocumentStatus status;
     };
 
-    // Множество стоп-слов
+    // Set of stop words
     std::set<std::string> stop_words_;
 
-    // Структура данных, которая хранит информацию о каждом слове:
-    // ИД документов где встречается это слово, доля в этих документах
+    // Data structure that stores information about each word:
+    // ID of documents where this word occurs, share in these documents 
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
 
-    // Структура данных для хранения дополнительной информации о документах
+    // Data structure for storing additional information about documents 
     std::map<int, DocumentData> documents_extra_;
 
-    // Кол-во документов
+    // Amount of documents
     size_t document_count_ = 0;
 
-    // История добавления документов (нужно для DocumentGetId(int index))
+    // History of adding documents
     std::vector<int> document_ids_;
 
 public: 
     
-    // Добавить документ
-    // Параметры - ИД документа, содержимое документа, статус документа, рейтинги документа
+    // Add document
+    // Params - id, content, status, rating
     void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
 
-    // Найти топ документы. Используется шаблон и его специализации
-    // Параметры - запрос
-    // Дополнительные параметры (специализация) - статус документа | функция-предикат
+    // Find top documents using template and specializations
+    // Params - query
+    // Additional params (specialization) - document status | predicate function
     template <typename Filter>
-    std::vector<Document> FindTopDocuments(const std::string& raw_query, Filter filter) const;    
+    std::vector<Document> FindTopDocuments(const std::string& raw_query, Filter filter) const
+    {            
+        // Get query with plus- and minus-words
+        const Query query = ParseQuery(raw_query);
+        
+        // Get all documents by predicate
+        auto matched_documents = FindAllDocuments(query, filter);
+        
+        // First of all sort by relevance, then by rating
+        auto& documents_for_status = documents_extra_;         
+        sort(matched_documents.begin(), matched_documents.end(), 
+            [filter, &documents_for_status](const Document& lhs, const Document& rhs) 
+            {
+                if (std::abs(lhs.relevance - rhs.relevance) < 1e-6) 
+                {
+                    return lhs.rating > rhs.rating;
+                } 
+                else 
+                {
+                    return lhs.relevance > rhs.relevance;
+                }
+            });
+
+        // Max document count
+        if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) 
+        {
+            matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
+        }
+
+        return matched_documents;
+    }
     std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentStatus document_status) const;
     std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 
     int GetDocumentCount() const;
     int GetDocumentId(int index) const;
 
-    // Вернуть информацию о значимых словах в документе
-    // Необходимо учитывать только плюс-слова, если встретилось
-    // хотя бы одно минус-слово - вернуть вектор слов пустым вместе 
-    // со статусом документа
+    // Return information about significant words in the document
+    // Only take into account plus-words if met
+    // at least one negative word - return a vector of words empty together
+    // with document status 
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
     
 private: 
-    // Проверяет, является ли слово стоп-словом
-    // Параметры - слово
+    // Checks if a word is a stop-word 
     bool IsStopWord(const std::string& word) const;
     
-    // Возвращает содержимое документа без стоп слов
-    // Параметры - содержимое документа
+    // Returns the content of the document without stop words
     std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
     
-    // Посчитать средний рейтинг документа
-    // Параметры - вектор рейтингов
+    // Calculate the average rating of a document
     static int ComputeAverageRating(const std::vector<int>& ratings);
 
-    // Проверяет наличие спецсимволов в строке
+    // Checks for special characters in a string
     static bool IsValidWord(const std::string& word);
 
-    // Структура для хранения информации о слове
+    // Structure for storing information about a word
     struct QueryWord 
     {
         std::string data;
@@ -115,33 +143,30 @@ private:
         bool is_stop;
     };
     
-    // Распределить слово в запросе в множества плюс- или минус-слов
-    // Параметры - слово запроса
+    // Distribute a word in a query into sets of plus- or minus-words
     QueryWord ParseQueryWord(std::string text) const;
     
-    // Структура для хранения множеств плюс- и минус-слов для запроса
-    struct Query {
+    // A structure for storing sets of plus- and minus-words for a query
+    struct Query 
+    {
         std::set<std::string> plus_words;
         std::set<std::string> minus_words;
     };
     
-    // Спарсить строку в запрос
-    // Параметры - строка с запросом
+    // Parse the line into a query
     Query ParseQuery(const std::string& text) const;
     
-    // Посчитать IDF слова
-    // Параметры - значимое слово в документе
+    // Calculate IDF of word
     double ComputeWordInverseDocumentFreq(const std::string& word) const;
 
-    // Найти все документы в SearchServer по запросу. Filter для фильтрация документов (предикат)
-    // Параметры - запрос
+    // Find all documents in SearchServer by query. Filter for filtering documents (predicate) 
     template <typename Filter>
     std::vector<Document> FindAllDocuments(const Query& query, Filter filter) const
     {
-        // Релевантность документов
+        // Relevance
         std::map<int, double> document_to_relevance;
 
-        // Считаем релевантность документа используя TF-IDF
+        // Calculate relevance using TF-IDF
         for (const std::string& word : query.plus_words) 
         {
             if (word_to_document_freqs_.count(word) == 0) 
@@ -149,16 +174,16 @@ private:
                 continue;
             }
 
-            // Находим IDF слова ...
+            // Find IDF of word ...
             const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
             
-            // Фильтруем документы по плюс словам (по слову находим словарь документов, где ключ - ИД документа
+            // Filter documents by plus words (by word we find a document dictionary, where the key is the document ID 
             for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) 
             {
-                // Для быстрого доступа к дополнительной информации документа 
+                // For quick access to additional document information
                 const auto& document_extra_data = documents_extra_.at(document_id);
 
-                // Если документ проходит через фильтр, считаем TF-IDF
+                // If the document passes through the filter, calculate TF-IDF 
                 if (filter(document_id, document_extra_data.status, document_extra_data.rating)) 
                 {
                     document_to_relevance[document_id] += term_freq * inverse_document_freq;
@@ -166,7 +191,7 @@ private:
             }
         }
         
-        // Удаляем документы с минус-словами из результата,
+        // Remove documents with negative keywords from the result
         for (const std::string& word : query.minus_words) 
         {
             if (word_to_document_freqs_.count(word) == 0) 
@@ -179,7 +204,7 @@ private:
             }
         }
 
-        // Подготавливаем результат для возврата информации о всех документах по запросу, также фильтруем
+        // Prepare the result for returning information about all documents upon query, we also filter it
         std::vector<Document> matched_documents;
         for (const auto [document_id, relevance] : document_to_relevance) 
         {
@@ -191,7 +216,7 @@ private:
                 });
         }
 
-        // Возвращаем все документы по запросу
+        // Return result documents
         return matched_documents;
     }
 };

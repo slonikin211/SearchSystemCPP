@@ -7,8 +7,10 @@
 // ------------------------------- Constructors ------------------------------- //
 
 template <typename StringContainer>
-SearchServer::SearchServer(const StringContainer& stop_words) {
-    for (const std::string& str : stop_words) {
+SearchServer::SearchServer(const StringContainer& stop_words) 
+{
+    for (const std::string& str : stop_words) 
+    {
         if (!str.empty())  // line is not empty ...
         {
             if (IsValidWord(str))  // ... and has only valid symbols
@@ -17,7 +19,7 @@ SearchServer::SearchServer(const StringContainer& stop_words) {
             }
             else 
             {
-                throw std::invalid_argument("В строке содержатся специальные символы");
+                throw std::invalid_argument("Error! Line has invalid symbols!");
             }
         }
     }
@@ -39,11 +41,13 @@ SearchServer::SearchServer(const char* stop_words_text)
 void SearchServer::AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings) 
 {
     // Verifing document id
-    if (document_id < 0 || documents_extra_.count(document_id)) {
-        throw std::invalid_argument("Некорректный id документа");
+    if (document_id < 0 || documents_extra_.count(document_id)) 
+    {
+        throw std::invalid_argument("Error! Not valid id of document!");
     }
-    if (!IsValidWord(document)) {
-        throw std::invalid_argument("Документ содержит специальные символы");
+    if (!IsValidWord(document)) 
+    {
+        throw std::invalid_argument("Error! Line has invalid symbols!");
     }
 
     // Saving document data without stop words
@@ -53,7 +57,8 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
     const double inv_word_count = 1.0 / words.size();
 
     // Saving the data about the document in the required format (needed for TF-IDF) 
-    for (const std::string& word : words) {
+    for (const std::string& word : words) 
+    {
         word_to_document_freqs_[word][document_id] += inv_word_count;
     }
 
@@ -69,38 +74,8 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
     ++document_count_;
 }
 
-template <typename Filter>
-std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, Filter filter) const 
-{            
-    // Получаем запрос с плюс- и минус-словами
-    const Query query = ParseQuery(raw_query);
-    
-    // Получаем все документы по запросу и предикату
-    auto matched_documents = FindAllDocuments(query, filter);
-    
-    // Сортируем сначала по релевантности, после по рейтингу
-    auto& documents_for_status = documents_extra_;         
-    sort(matched_documents.begin(), matched_documents.end(), [filter, &documents_for_status](const Document& lhs, const Document& rhs) {
-        if (std::abs(lhs.relevance - rhs.relevance) < 1e-6) 
-        {
-            return lhs.rating > rhs.rating;
-        } 
-        else 
-        {
-            return lhs.relevance > rhs.relevance;
-        }
-    });
-
-    // Не забываем про ограничение выводимых документов в топе
-    if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT) 
-    {
-        matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
-    }
-
-    return matched_documents;
-}
-
-std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, DocumentStatus document_status) const {
+std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, DocumentStatus document_status) const 
+{
     return FindTopDocuments(raw_query, 
         [document_status](int document_id, DocumentStatus status, int rating) 
         { 
@@ -108,16 +83,19 @@ std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_quer
         });
 }
 
-std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query) const {
+std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query) const 
+{
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 
-int SearchServer::GetDocumentCount() const {
+int SearchServer::GetDocumentCount() const 
+{
     return document_count_;
 }
 
-int SearchServer::GetDocumentId(int index) const {
-    // Выброситься out_of_range, если индекс плохой
+int SearchServer::GetDocumentId(int index) const 
+{
+    // out_of_range will be throwed if bad index
     return document_ids_.at(index);
 }
 
@@ -159,33 +137,42 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
 
 // ------------------------------- Private ------------------------------- //
 
-bool SearchServer::IsStopWord(const std::string& word) const {
+bool SearchServer::IsStopWord(const std::string& word) const 
+{
     return stop_words_.count(word) > 0;
 }
 
-std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string& text) const {
+std::vector<std::string> SearchServer::SplitIntoWordsNoStop(const std::string& text) const 
+{
     std::vector<std::string> words;
-    for (const std::string& word : SplitIntoWords(text)) {
-        if (!IsStopWord(word)) {
+    for (const std::string& word : SplitIntoWords(text)) 
+    {
+        if (!IsStopWord(word)) 
+        {
             words.push_back(word);
         }
     }
     return words;
 }
 
-int SearchServer::ComputeAverageRating(const std::vector<int>& ratings) {
+int SearchServer::ComputeAverageRating(const std::vector<int>& ratings) 
+{
     int rating_sum = 0;
-    for (const int rating : ratings) {
+    for (const int rating : ratings) 
+    {
         rating_sum += rating;
     }
     return rating_sum / static_cast<int>(ratings.size());
 }
 
-bool SearchServer::IsValidWord(const std::string& word) {
+bool SearchServer::IsValidWord(const std::string& word) 
+{
     // A valid word must not contain special characters
-    return std::none_of(word.begin(), word.end(), [](char c) {
-        return c >= '\0' && c < ' ';
-    });
+    return std::none_of(word.begin(), word.end(), 
+        [](char c) 
+        {
+            return c >= '\0' && c < ' ';
+        });
 }
 
 SearchServer::QueryWord SearchServer::ParseQueryWord(std::string text) const 
@@ -194,7 +181,7 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(std::string text) const
     if (text[0] == '-') 
     {
         is_minus = true;
-        text = text.substr(1);  // для удаления '-'  в начале
+        text = text.substr(1);  // for deleting '-' at the begining
     }
     return 
     {
@@ -205,50 +192,64 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(std::string text) const
 }
 
 SearchServer::Query SearchServer::ParseQuery(const std::string& text) const {
-    // Проверяем запрос на:
-    // 1. Спец. символы
-    // 2. Более 1 минуса перед минус-словом (если минус в середине слово, то все ок)
-    // 3. После минуса нет текста
+    // Check query:
+    // 1. Special symbols
+    // 2. More than one minus before minus-words (if minus at the midle it is ok)
+    // 3. After minus there is no text
 
-    // 1. Спец символы
-    if (!IsValidWord(text)) {
-        throw std::invalid_argument("В строке содержатся специальные символы");
+    // 1. Special symbols
+    if (!IsValidWord(text)) 
+    {
+        throw std::invalid_argument("Error! Line has invalid symbols!");
     }
 
-    // 2. Несколько минусов подряд
+    // 2. Several minuses in a row
     const size_t size = text.size();
-    for (size_t i = 0u; i + 1u < size; ++i) {// Берем не всю строку, а до -1 в конце, чтобы можно было обращаться к следующему элементу ...
-        if (text[i] == '-') {
-            // После минуса есть минус
-            if (text [i + 1u] == '-') {
-                throw std::invalid_argument("Несколько минусов подряд");
+    for (size_t i = 0u; i + 1u < size; ++i) 
+    {
+        if (text[i] == '-') 
+        {
+            // After minus there is minus
+            if (text [i + 1u] == '-') 
+            {
+                throw std::invalid_argument("Several minuses in a row!");
             }
-            // 3.1. После минуса пробел
-            if (text[i + 1u] == ' ') {
-                throw std::invalid_argument("После минуса пусто");
+            // 3.1. After minus there is space
+            if (text[i + 1u] == ' ') 
+            {
+                throw std::invalid_argument("No text after minus!");
             }
         }
     }
-    // ... Ну и проверяем граничные случаи отдельно
-    if (text.size() == 1u) {
-        if (text[0u] == '-') {
-            throw std::invalid_argument("В запросе только минус без ничего");
+    // ... And checking boundary variants
+    if (text.size() == 1u) 
+    {
+        if (text[0u] == '-') 
+        {
+            throw std::invalid_argument("Here is only minus and nothing else!");
         }
     }
-    if (text.size() >= 2u) {
-        // 3.2. В конце минус
-        if (text[size - 1u] == '-') {
-            throw std::invalid_argument("После минуса пусто");
+    if (text.size() >= 2u)
+    {
+        // 3.2. Minus at the end
+        if (text[size - 1u] == '-') 
+        {
+            throw std::invalid_argument("No text after minus!");
         }
     }
 
     Query query;
-    for (const std::string& word : SplitIntoWords(text)) {
+    for (const std::string& word : SplitIntoWords(text)) 
+    {
         const QueryWord query_word = ParseQueryWord(word);
-        if (!query_word.is_stop) {
-            if (query_word.is_minus) {
+        if (!query_word.is_stop) 
+        {
+            if (query_word.is_minus) 
+            {
                 query.minus_words.insert(query_word.data);
-            } else {
+            } 
+            else 
+            {
                 query.plus_words.insert(query_word.data);
             }
         }
@@ -261,71 +262,10 @@ double SearchServer::ComputeWordInverseDocumentFreq(const std::string& word) con
     return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
 }
 
-// template <typename Filter>
-// std::vector<Document> SearchServer::FindAllDocuments(const SearchServer::Query& query, Filter filter) const 
-// {
-//     // Релевантность документов
-//     std::map<int, double> document_to_relevance;
 
-//     // Считаем релевантность документа используя TF-IDF
-//     for (const std::string& word : query.plus_words) 
-//     {
-//         if (word_to_document_freqs_.count(word) == 0) 
-//         {
-//             continue;
-//         }
-
-//         // Находим IDF слова ...
-//         const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
-        
-//         // Фильтруем документы по плюс словам (по слову находим словарь документов, где ключ - ИД документа
-//         for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word)) 
-//         {
-//             // Для быстрого доступа к дополнительной информации документа 
-//             const auto& document_extra_data = documents_extra_.at(document_id);
-
-//             // Если документ проходит через фильтр, считаем TF-IDF
-//             if (filter(document_id, document_extra_data.status, document_extra_data.rating)) 
-//             {
-//                 document_to_relevance[document_id] += term_freq * inverse_document_freq;
-//             }
-//         }
-//     }
-    
-//     // Удаляем документы с минус-словами из результата,
-//     for (const std::string& word : query.minus_words) 
-//     {
-//         if (word_to_document_freqs_.count(word) == 0) 
-//         {
-//             continue;
-//         }
-//         for (const auto document_to_erase : word_to_document_freqs_.at(word)) 
-//         {
-//             document_to_relevance.erase(document_to_erase.first);
-//         }
-//     }
-
-//     // Подготавливаем результат для возврата информации о всех документах по запросу, также фильтруем
-//     std::vector<Document> matched_documents;
-//     for (const auto [document_id, relevance] : document_to_relevance) 
-//     {
-//         matched_documents.push_back(
-//             {
-//                 document_id,
-//                 relevance,
-//                 documents_extra_.at(document_id).rating
-//             });
-//     }
-
-//     // Возвращаем все документы по запросу
-//     return matched_documents;
-// }
 
 // ------------------------------- explicit instanciation------------------------------- //
 
 // explicit constructor of string container
 template SearchServer::SearchServer(const std::vector<std::string>&);
 template SearchServer::SearchServer(const std::set<std::string>&);
-
-template std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, 
-    std::function<bool (int, DocumentStatus, int)>) const;
