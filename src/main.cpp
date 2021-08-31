@@ -3,7 +3,7 @@
 // Finish of the project development 02.08.2021
 // Tasks:
 // Creating Search System with TF-IDF ranging of documents
-// Crearing framework for testing (TDD)
+// Creating framework for testing (TDD)
 // Exceptions
 // Using template iterators for Paginator
 
@@ -29,5 +29,7 @@ int main() {
     LOG_DURATION("Standart hello");
     LOG_DURATION_STREAM("Hello from stream"s, cout);
 
+    // If you see this line, all tests are passed
+    cout << "Search server testing finished"s << endl;
     return 0;
 }
