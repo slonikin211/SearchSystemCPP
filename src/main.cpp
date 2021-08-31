@@ -22,14 +22,11 @@ using namespace std;
 
 int main() {
     Test_SearchServer::TestSearchServer();
-
     // If you see this line, all tests are passed
-    // cout << "Search server testing finished"s << endl;
+    cout << "Search server testing finished"s << endl;
 
     LOG_DURATION("Standart hello");
     LOG_DURATION_STREAM("Hello from stream"s, cout);
 
-    // If you see this line, all tests are passed
-    cout << "Search server testing finished"s << endl;
     return 0;
 }
