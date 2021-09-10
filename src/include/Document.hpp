@@ -1,23 +1,30 @@
 #pragma once
- 
-// Document - structure for storaging data of documents
-struct Document 
-{
-    int id;
-    double relevance;
-    int rating;
+#include <iostream>
+#include <string>
+#include <vector>
 
-    // Constructor for document initialization
+struct Document {
     Document() = default;
 
-    Document(int id, double relevance, int rating);
+    Document(int id, double relevance, int rating)
+        : id(id)
+        , relevance(relevance)
+        , rating(rating) {
+    }
+
+    int id = 0;
+    double relevance = 0.0;
+    int rating = 0;
 };
 
-// Enum Class DocumentStatus with document states
-enum class DocumentStatus 
-{
+std::ostream& operator<<(std::ostream& out, const Document& document);
+
+enum class DocumentStatus {
     ACTUAL,
     IRRELEVANT,
     BANNED,
     REMOVED,
 };
+
+void PrintDocument(const Document& document);
+void PrintMatchDocumentResult(int document_id, const std::vector<std::string>& words, DocumentStatus status);
