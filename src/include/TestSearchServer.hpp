@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "SearchServer.hpp"     // SearchServer class for testing
+#include "RemoveDuplicates.hpp"
 
 namespace Test_SearchServer
 {
@@ -329,8 +330,127 @@ namespace Test_SearchServer
         }
     }
 
+    // The test checks the functionality of SearchServer. It can be worked with range-based for
+    void TestForLoopInsteadOfGetDocumentId()
+    {
+        const std::string stop_words = "и в на";
+        const int doc_id1 = 1, doc_id2 = 2, doc_id3 = 3;
+        const std::string content1 = "белый кот и модный ошейник", content2 = "пушистый кот пушистый хвост", content3 = "ухоженный пёс выразительные глаза";
+        {
+            SearchServer server("");
+            server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
+            server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
+            server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, {5, 5, 5});
+
+            int index = 1;
+            for (const int document_id : server) 
+            {
+                ASSERT_EQUAL(document_id, index++);
+            }
+        }
+    }
+
+    // The test verifies correct calculation of word frequencies in a document
+    void TestGetWordFrequencies()
+    {
+        const std::string stop_words = "и в на";
+        const int doc_id1 = 1, doc_id2 = 2, doc_id3 = 3;
+        const std::string content1 = "один два три", content2 = "один один два два", content3 = "один";
+        {
+            SearchServer server("");
+            server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
+            server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
+            server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, {5, 5, 5});
+
+            auto res1 = server.GetWordFrequencies(1);
+            ASSERT_EQUAL(res1.size(), 3u);
+            ASSERT(fequal(res1.begin()->second, 0.3333));
+
+            auto res2 = server.GetWordFrequencies(2);
+            ASSERT_EQUAL(res2.size(), 2u);
+            ASSERT(fequal(res2.begin()->second, 0.5));
+
+            auto res3 = server.GetWordFrequencies(3);
+            ASSERT_EQUAL(res3.size(), 1u);
+            ASSERT(fequal(res3.begin()->second, 1.0));
+            
+            // And checking for empty result
+            auto res4 = server.GetWordFrequencies(5);
+            ASSERT_EQUAL(res4.size(), 0u);
+        }
+    }
+
+    // The test verifies amount of documents after removing and data lost
+    void TestRemovingDocumentById()
+    {
+        const std::string stop_words = "и в на";
+        const int doc_id1 = 1, doc_id2 = 2, doc_id3 = 3;
+        const std::string content1 = "один два три", content2 = "один один два два", content3 = "один";
+        {
+            SearchServer server("");
+            server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
+            server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
+            server.AddDocument(doc_id3, content3, DocumentStatus::ACTUAL, {5, 5, 5});
+
+            ASSERT_EQUAL(server.GetDocumentCount(), 3);
+            server.RemoveDocument(2);
+            ASSERT_EQUAL(server.GetDocumentCount(), 2);
+            auto find_removed = server.GetWordFrequencies(2);   // this document was deleted
+            ASSERT_EQUAL(find_removed.size(), 0u);
+
+            // Try to delete not existing id
+            server.RemoveDocument(6);
+            ASSERT_EQUAL(server.GetDocumentCount(), 2);
+        }
+    }
+
+    // The test verifies that document duplicates removed correctly
+    void TestRemoveDuplicatesCorrect()
+    {
+        const std::string stop_words = "и в на";
+        {
+            const int doc_id1 = 1, doc_id2 = 2;
+            const std::string content1 = "один", content2 = "один";
+
+            SearchServer server("");
+            server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
+            server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
+
+            ASSERT_EQUAL(server.GetDocumentCount(), 2);
+            RemoveDuplicates(server);
+            ASSERT_EQUAL(server.GetDocumentCount(), 1);
+        }
+
+        {
+            const int doc_id1 = 1, doc_id2 = 2;
+            const std::string content1 = "один", content2 = "один один";
+
+            SearchServer server("");
+            server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
+            server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
+
+            ASSERT_EQUAL(server.GetDocumentCount(), 2);
+            RemoveDuplicates(server);
+            ASSERT_EQUAL(server.GetDocumentCount(), 1);
+        }
+
+        {
+            const int doc_id1 = 1, doc_id2 = 2;
+            const std::string content1 = "один", content2 = "один два";
+
+            SearchServer server("");
+            server.AddDocument(doc_id1, content1, DocumentStatus::ACTUAL, {3, 3, 3});
+            server.AddDocument(doc_id2, content2, DocumentStatus::ACTUAL, {4, 4, 4});
+
+            ASSERT_EQUAL(server.GetDocumentCount(), 2);
+            RemoveDuplicates(server);
+            ASSERT_EQUAL(server.GetDocumentCount(), 2);
+        }
+    }
+
     // TestSearchServer is entry point for launching tests
-    void TestSearchServer() {
+    void TestSearchServer() 
+    {
         RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
         RUN_TEST(TestAddDocumentWithQueryWords);
         RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
@@ -339,6 +459,10 @@ namespace Test_SearchServer
         RUN_TEST(TestFoundDocumentSortedByRelevance);
         RUN_TEST(TestRatingOfTheDocument);
         RUN_TEST(TestFindDocumentByStatus);
+        RUN_TEST(TestForLoopInsteadOfGetDocumentId);
+        RUN_TEST(TestGetWordFrequencies);
+        RUN_TEST(TestRemovingDocumentById);
+        RUN_TEST(TestRemoveDuplicatesCorrect);
     }
 
     // --------- The end of module tests for SearchServer -----------
