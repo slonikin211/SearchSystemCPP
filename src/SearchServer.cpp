@@ -54,12 +54,21 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
     const std::vector<std::string> words = SplitIntoWordsNoStop(document);
 
     // Finding the fraction of 1 word in the document 
-    const double inv_word_count = 1.0 / words.size();
+    const int words_size = words.size();
+    const double inv_word_count = 1.0 /words_size;
 
     // Saving the data about the document in the required format (needed for TF-IDF) 
     for (const std::string& word : words) 
     {
         word_to_document_freqs_[word][document_id] += inv_word_count;
+    }
+
+    // Calculate words frequncies in the document
+    std::set<std::string> unique_words(words.begin(), words.end());
+    for (const std::string& word : unique_words) 
+    {
+        document_to_word_freqs_[document_id].insert({word, 
+            std::count(words.begin(), words.end(), word) / static_cast<double>(words_size)});
     }
 
     // Saving advanced data of the document
@@ -70,7 +79,7 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
         });
 
     // Loging the document
-    document_ids_.push_back(document_id);
+    document_ids_.insert(document_id);
     ++document_count_;
 }
 
@@ -93,10 +102,33 @@ int SearchServer::GetDocumentCount() const
     return document_count_;
 }
 
-int SearchServer::GetDocumentId(int index) const 
+std::set<int>::const_iterator SearchServer::begin() const
 {
-    // out_of_range will be throwed if bad index
-    return document_ids_.at(index);
+    return document_ids_.begin();
+}
+
+std::set<int>::const_iterator SearchServer::end() const
+{
+    return document_ids_.end();
+}
+
+const std::map<std::string, double>& SearchServer::GetWordFrequencies(int document_id) const
+{
+    static std::map<std::string, double> words_freqs;
+
+    if (!words_freqs.empty())   // because of static variable
+    {
+        words_freqs.clear();
+    }
+    
+    // Verifing document id
+    if (document_id < 0 || !documents_extra_.count(document_id)) 
+    {
+        return words_freqs;
+    }
+
+    words_freqs = document_to_word_freqs_.at(document_id);
+    return words_freqs;
 }
 
 std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument(const std::string& raw_query, int document_id) const {
@@ -133,7 +165,20 @@ std::tuple<std::vector<std::string>, DocumentStatus> SearchServer::MatchDocument
     return {matched_words, documents_extra_.at(document_id).status};
 }
 
-
+void SearchServer::RemoveDocument(int document_id)
+{
+    if (document_ids_.find(document_id) != document_ids_.end()) 
+    {
+        for (auto word : document_to_word_freqs_.at(document_id)) 
+        {
+            word_to_document_freqs_.erase(word.first);
+        }
+        document_to_word_freqs_.erase(document_id);
+        documents_extra_.erase(document_id);
+        document_ids_.erase(document_id);
+        --document_count_;
+    }
+}
 
 // ------------------------------- Private ------------------------------- //
 

@@ -60,6 +60,10 @@ private:
     // ID of documents where this word occurs, share in these documents 
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
 
+    // Data structure that stores information about each document:
+    // Key - id of a document, value - map of words frequencies
+    std::map<int, std::map<std::string, double>> document_to_word_freqs_;
+
     // Data structure for storing additional information about documents 
     std::map<int, DocumentData> documents_extra_;
 
@@ -67,7 +71,7 @@ private:
     size_t document_count_ = 0;
 
     // History of adding documents
-    std::vector<int> document_ids_;
+    std::set<int> document_ids_;
 
 public: 
     
@@ -114,7 +118,18 @@ public:
     std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 
     int GetDocumentCount() const;
-    int GetDocumentId(int index) const;
+
+    // begin and end for iterating in range-based for
+    std::set<int>::const_iterator begin() const;
+    std::set<int>::const_iterator end() const;
+
+    // Find word frequrncies in a document by id
+    // Return map where key is a word and value is a percentage of the word in the document
+    const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+
+    // Removing document from the server by id
+    // Required complexity is o(W * logN) where W is amount of words in a document
+    void RemoveDocument(int document_id);
 
     // Return information about significant words in the document
     // Only take into account plus-words if met
