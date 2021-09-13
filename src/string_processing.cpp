@@ -1,4 +1,4 @@
-#include "include/StringProcessing.hpp"
+#include "string_processing.h"
 
 std::vector<std::string> SplitIntoWords(const std::string& text) 
 {

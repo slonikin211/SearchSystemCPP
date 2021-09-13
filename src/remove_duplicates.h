@@ -1,5 +1,5 @@
 #pragma once
 
-#include "SearchServer.hpp"
+#include "search_server.h"
 
 void RemoveDuplicates(SearchServer& search_server);

@@ -1,4 +1,4 @@
-#include "include/Document.hpp"
+#include "document.h"
 
 Document::Document(int id, double relevance, int rating)
     : id(id)
@@ -6,7 +6,6 @@ Document::Document(int id, double relevance, int rating)
     , rating(rating) 
 {
 }
-
 std::ostream& operator<<(std::ostream& out, const Document& document) {
     out << "{ "
         << "document_id = " << document.id << ", "

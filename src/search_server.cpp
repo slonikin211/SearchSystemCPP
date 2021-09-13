@@ -1,8 +1,8 @@
-#include "include/SearchServer.hpp"
+#include "search_server.h"
 
-#include "include/ReadInputFunctions.hpp"
-#include "include/StringProcessing.hpp"
-#include "include/Document.hpp"
+#include "read_input_functions.h"
+#include "string_processing.h"
+#include "document.h"
 
 // ------------------------------- Constructors ------------------------------- //
 

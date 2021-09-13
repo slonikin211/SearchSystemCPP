@@ -1,4 +1,4 @@
-#include "include/RemoveDuplicates.hpp"
+#include "remove_duplicates.h"
 
 #include <iostream>
 

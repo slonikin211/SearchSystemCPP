@@ -11,9 +11,9 @@
 #include <cctype>
 #include <functional>
 
-#include "ReadInputFunctions.hpp"
-#include "StringProcessing.hpp"
-#include "Document.hpp"
+#include "read_input_functions.h"
+#include "string_processing.h"
+#include "document.h"
 
 
 // Maximum amount of documents in the search result
