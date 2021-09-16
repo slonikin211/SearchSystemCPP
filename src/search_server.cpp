@@ -169,6 +169,7 @@ void SearchServer::RemoveDocument(int document_id)
 {
     if (document_ids_.find(document_id) != document_ids_.end()) 
     {
+        // Can't use structured bindings because of -Werror=unused-value for second parameter
         for (auto word : document_to_word_freqs_.at(document_id)) 
         {
             word_to_document_freqs_.erase(word.first);
