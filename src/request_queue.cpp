@@ -54,6 +54,6 @@ int RequestQueue::GetNoResultRequests() const
 }
 
 
-// // explicit instanciation
+// explicit instanciation
 template std::vector<Document> RequestQueue::AddFindRequest(const std::string&,
     std::function<bool (int, DocumentStatus, int)>);

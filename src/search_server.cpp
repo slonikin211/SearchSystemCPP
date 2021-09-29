@@ -1,29 +1,6 @@
 #include "search_server.h"
 
-#include "read_input_functions.h"
 #include "string_processing.h"
-#include "document.h"
-
-// ------------------------------- Constructors ------------------------------- //
-
-template <typename StringContainer>
-SearchServer::SearchServer(const StringContainer& stop_words) 
-{
-    for (const std::string& str : stop_words) 
-    {
-        if (!str.empty())  // line is not empty ...
-        {
-            if (IsValidWord(str))  // ... and has only valid symbols
-            {
-                stop_words_.insert(str);
-            }
-            else 
-            {
-                throw std::invalid_argument("Error! Line has invalid symbols!");
-            }
-        }
-    }
-}
 
 SearchServer::SearchServer(const std::string& stop_words_text)
     : SearchServer(SplitIntoWords(stop_words_text))
@@ -313,5 +290,5 @@ double SearchServer::ComputeWordInverseDocumentFreq(const std::string& word) con
 // ------------------------------- explicit instanciation------------------------------- //
 
 // explicit constructor of string container
-template SearchServer::SearchServer(const std::vector<std::string>&);
-template SearchServer::SearchServer(const std::set<std::string>&);
+// template SearchServer::SearchServer(const std::vector<std::string>&);
+// template SearchServer::SearchServer(const std::set<std::string>&);

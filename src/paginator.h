@@ -1,5 +1,3 @@
-// в качестве заготовки кода используйте последнюю версию своей поисковой системы#pragma once
-
 // Paginator - a class that uses iterators to split containers into "pages" 
 // Constructor - begin iterator, end iterator, page_size 
 #pragma once

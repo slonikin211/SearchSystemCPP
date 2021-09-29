@@ -1,5 +1,8 @@
 #pragma once
 
+#include "document.h"
+#include "string_processing.h"
+
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -10,11 +13,6 @@
 #include <stdexcept>
 #include <cctype>
 #include <functional>
-
-#include "read_input_functions.h"
-#include "string_processing.h"
-#include "document.h"
-
 
 // Maximum amount of documents in the search result
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
@@ -37,14 +35,29 @@ class SearchServer
 public:
     // Param of constructor is a container of string words
     template <typename StringContainer>
-    explicit SearchServer(const StringContainer& stop_words);
+    explicit SearchServer(const StringContainer& stop_words)
+    {
+        for (const std::string& str : stop_words) 
+        {
+            if (!str.empty())  // line is not empty ...
+            {
+                if (IsValidWord(str))  // ... and has only valid symbols
+                {
+                    stop_words_.insert(str);
+                }
+                else 
+                {
+                    throw std::invalid_argument("Error! Line has invalid symbols!");
+                }
+            }
+        }
+    }
 
     // Constuructor that accepts the std::string with stop-words
     explicit SearchServer(const std::string& stop_words_text);
-
     // Constuructor that accepts the const char* with stop-words
     explicit SearchServer(const char* stop_words_text);
-
+    
 private:
     // Structure for storing additional document data: rating and status
     struct DocumentData 

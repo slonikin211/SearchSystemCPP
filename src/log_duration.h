@@ -2,12 +2,15 @@
 
 #include <chrono>
 #include <iostream>
+#include <typeinfo>
 
-class LogDuration {
+class LogDuration 
+{
 public:
     // For better usage and code beauty
     using Clock = std::chrono::steady_clock;
 
+    // Declarations //
     LogDuration(const std::string& id);
     LogDuration(const std::string& id, std::ostream& out);
     ~LogDuration();
@@ -24,8 +27,7 @@ private:
 #define LOG_DURATION_STREAM(x, out) LogDuration UNIQUE_VAR_NAME_PROFILE(x, out)
 
 
-
-#include <typeinfo>
+// Definitions //
 
 LogDuration::LogDuration(const std::string& id) 
     : id_(id), out_(std::cerr)
@@ -54,14 +56,16 @@ LogDuration::~LogDuration()
     //std::cout << "---PREFIX---: " << typeid(out_).name() << std::endl;
 
     // TODO: rewrite after debugging with "() ? () : ()" style
-    if (output_thread_name == "std::cout"s)     // ... how (first TODO)?
-    {
-        output_prefix = "Operation time: "s;
-    }
-    else
-    {
-        output_prefix = id_ + ": "s;
-    }
+    // if (output_thread_name == "std::cout"s)     // ... how (first TODO)?
+    // {
+    //     output_prefix = "Operation time: "s;
+    // }
+    // else
+    // {
+    //     output_prefix = id_ + ": "s;
+    // }
+
+    output_prefix = (output_thread_name == "std::cout"s) ? ("Operation time: "s) : (id_ + ": "s);
 
     out_ << output_prefix << duration_cast<milliseconds>(dur).count() << " ms"s << std::endl;
 }
