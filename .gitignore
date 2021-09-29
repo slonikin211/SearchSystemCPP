@@ -10,3 +10,9 @@ unit_tests
 *.d
 *.o
 /obj/*.o
+
+# Windows
+*.exe
+
+# Makefile (standart)
+Makefile

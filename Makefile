@@ -4,11 +4,11 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++17 -Wall -Werror -g
+CXXFLAGS = -std=c++17 -Wall
 LDFLAGS = 
 
 # Makefile settings - Can be customized.
-APPNAME = temp
+APPNAME = SServer
 EXT = .cpp
 SRCDIR = src
 OBJDIR = obj
@@ -22,7 +22,7 @@ RM = rm
 DELOBJ = $(OBJ)
 # Windows OS variables & settings
 DEL = del
-EXE = .exe
+EXE = *.exe
 WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
 
 ########################################################################
@@ -50,7 +50,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
 # Cleans complete project
 .PHONY: clean
 clean:
-	$(RM) $(DELOBJ) $(DEP) $(APPNAME)
+	$(DEL) $(WDELOBJ) $(EXE) $(DEP) $(APPNAME)
 
 # Cleans only all files with the extension .d
 .PHONY: cleandep
