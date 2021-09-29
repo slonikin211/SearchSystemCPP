@@ -15,9 +15,9 @@ void RemoveDuplicates(SearchServer& search_server)
     {
         std::set<std::string> words;
         // Can't use structured bindings because of -Werror=unused-value for second parameter
-        for (auto& words_freqs : search_server.GetWordFrequencies(document_id)) 
+        for (auto& [document, freqs] : search_server.GetWordFrequencies(document_id)) 
         {
-            words.insert(words_freqs.first);
+            words.insert(document);
         }
         if (word_to_document_freqs.find(words) == word_to_document_freqs.end()) 
         {
