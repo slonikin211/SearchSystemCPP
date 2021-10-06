@@ -1,7 +1,10 @@
 #pragma once
 
+#include <set>
 #include <vector>
 #include <string>
+#include <string_view>
 
-// Parse text into a vector of words
-std::vector<std::string> SplitIntoWords(const std::string& text);
+template <typename StringContainer>
+std::set<std::string> MakeUniqueNonEmptyStrings(const StringContainer& strings);
+std::vector<std::string_view> SplitIntoWords(std::string_view text);

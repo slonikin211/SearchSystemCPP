@@ -8,12 +8,12 @@ void RemoveDuplicates(SearchServer& search_server)
     // First of all we need to find set of words for every document
     // Then we need to compare set and map and remove by found document_id
 
-    std::map<std::set<std::string>, int> word_to_document_freqs;    // word_to_document_freqs_
+    std::map<std::set<std::string_view>, int> word_to_document_freqs;    // word_to_document_freqs_
     std::set<int> documents_to_delete;
 
     for (auto document_id : search_server)
     {
-        std::set<std::string> words;
+        std::set<std::string_view> words;
         // Can't use structured bindings because of -Werror=unused-value for second parameter
         for (auto& [document, freqs] : search_server.GetWordFrequencies(document_id)) 
         {
