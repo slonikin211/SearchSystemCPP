@@ -15,31 +15,39 @@ class ConcurrentMap
     {
         Access(Value& value, std::mutex&& mutex)
             : guard(mutex, std::adopt_lock)
-            , ref_to_value(value) 
+            , ref_to_value(value)
         {
         }
         std::lock_guard<std::mutex> guard;
         Value& ref_to_value;
+
+    private:
+        friend ConcurrentMap;   // for operator [] in ConcurrentMap
+        Access(Value& value, std::mutex& mutex)
+            : guard(mutex, std::adopt_lock)
+            , ref_to_value(value)
+        {
+        }
     };
 
 public:
     static_assert(std::is_integral_v<Key>, "ConcurrentMap supports only integer keys");
 
-    explicit ConcurrentMap(size_t bucket_count = std::thread::hardware_concurrency())
-        : maps_(bucket_count) 
+    explicit ConcurrentMap(size_t bucket_count = std::thread::hardware_concurrency() * 4u)
+        : buckets_(bucket_count) 
     {
     }
 
     Access operator[](const Key& key) 
     {
-        auto& [map, mutex] = maps_[static_cast<size_t>(key) % maps_.size()];
+        auto& [map, mutex] = buckets_[FindBucketIndexByKey(key)];
         mutex.lock();
-        return { map[key], std::move(mutex) };
+        return { map[key], mutex };
     }
 
     void Erase(const Key& key) 
     {
-        auto& [map, mutex] = maps_[static_cast<size_t>(key) % maps_.size()];
+        auto& [map, mutex] = buckets_[static_cast<size_t>(key) % buckets_.size()];
         std::lock_guard guard(mutex);
         map.erase(key);
     }
@@ -47,7 +55,7 @@ public:
     std::map<Key, Value> BuildOrdinaryMap() 
     {
         std::map<Key, Value> result;
-        for (auto& [map, mutex] : maps_) 
+        for (auto& [map, mutex] : buckets_) 
         {
             std::lock_guard<std::mutex> guard(mutex);
             result.insert(map.begin(), map.end());
@@ -56,5 +64,12 @@ public:
     }
 
 private:
-    std::vector<std::pair<std::map<Key, Value>, std::mutex>> maps_;
+
+    size_t FindBucketIndexByKey(const Key& key)
+    {
+        return static_cast<size_t>(key) % buckets_.size();
+    }
+
+private:
+    std::vector<std::pair<std::map<Key, Value>, std::mutex>> buckets_;
 };
