@@ -13,16 +13,6 @@ class ConcurrentMap
 {
     struct Access 
     {
-        Access(Value& value, std::mutex&& mutex)
-            : guard(mutex, std::adopt_lock)
-            , ref_to_value(value)
-        {
-        }
-        std::lock_guard<std::mutex> guard;
-        Value& ref_to_value;
-
-    private:
-        friend ConcurrentMap;   // for operator [] in ConcurrentMap
         Access(Value& value, std::mutex& mutex)
             : guard(mutex, std::adopt_lock)
             , ref_to_value(value)
