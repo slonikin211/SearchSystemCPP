@@ -2,6 +2,7 @@
 /temp
 /search_server.d
 /src/search_server
+/build
 
 # binary apps
 unit_tests
