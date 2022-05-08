@@ -4,7 +4,7 @@ C++ search engine that using the TF-IDF ranging algorithm for searching document
 
 ## Installation
 
-**Requirements:**__
+**Requirements:**<br />
 ❗ C++17  
 ❗ tbb library support
 
