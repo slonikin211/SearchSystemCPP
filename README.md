@@ -4,6 +4,7 @@ C++ search engine that using the TF-IDF ranging algorithm for searching document
 
 ## Installation
 
+**Requirements:**
 ❗ C++17  
 ❗ tbb library
 
@@ -11,6 +12,7 @@ C++ search engine that using the TF-IDF ranging algorithm for searching document
 Use CMakeLists.txt for installation. For example, in root folder:
 ```bash
 mkdir build
+cd build
 cmake ..
 ```
 Depending on your CMake generator, build the project
@@ -50,7 +52,6 @@ int main() {
     ) {
         search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
     }
-
 
     cout << "ACTUAL by default:"s << endl;
     // common version
