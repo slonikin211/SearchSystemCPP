@@ -13,26 +13,28 @@ class ConcurrentMap
 {
     struct Access 
     {
-        Access(Value& value, std::mutex& mutex)
+        Access(Value& value, std::mutex&& mutex)
             : guard(mutex, std::adopt_lock)
-            , ref_to_value(value)
+            , ref_to_value(value) 
         {
         }
+        std::lock_guard<std::mutex> guard;
+        Value& ref_to_value;
     };
 
 public:
     static_assert(std::is_integral_v<Key>, "ConcurrentMap supports only integer keys");
 
-    explicit ConcurrentMap(size_t bucket_count = std::thread::hardware_concurrency() * 4u)
+    explicit ConcurrentMap(size_t bucket_count = std::thread::hardware_concurrency())
         : buckets_(bucket_count) 
     {
     }
 
     Access operator[](const Key& key) 
     {
-        auto& [map, mutex] = buckets_[FindBucketIndexByKey(key)];
+        auto& [map, mutex] = buckets_[static_cast<size_t>(key) % buckets_.size()];
         mutex.lock();
-        return { map[key], mutex };
+        return { map[key], std::move(mutex) };
     }
 
     void Erase(const Key& key) 
@@ -51,13 +53,6 @@ public:
             result.insert(map.begin(), map.end());
         }
         return result;
-    }
-
-private:
-
-    size_t FindBucketIndexByKey(const Key& key)
-    {
-        return static_cast<size_t>(key) % buckets_.size();
     }
 
 private:

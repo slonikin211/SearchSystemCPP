@@ -18,6 +18,9 @@
 #include <execution>
 #include <string_view>
 
+
+std::vector<std::string_view> SPI(std::string_view text);
+
 // Maximum amount of documents in the search result
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 
@@ -103,7 +106,7 @@ public:
     std::vector<Document> FindTopDocuments(ExecutionPolicy&& policy,const std::string_view raw_query, Filter filter) const
     {            
         // Get query with plus- and minus-words
-        const Query query = ParseQuery(policy, raw_query);
+        const Query query = ParseQuery(policy, std::string(raw_query));
         
         // Get all documents by predicate
         auto matched_documents = FindAllDocuments(policy, query, filter);
@@ -196,12 +199,14 @@ private:
     Query ParseQuery(const std::string_view text) const;
 
     template<class ExecutionPolicy>
-    Query ParseQuery(ExecutionPolicy&& policy, const std::string_view text) const 
+    Query ParseQuery(ExecutionPolicy&& policy, const std::string query_text) const 
     {
         // Check query:
         // 1. Special symbols
         // 2. More than one minus before minus-words (if minus at the midle it is ok)
         // 3. After minus there is no text
+
+        std::string_view text(query_text);
 
         // 1. Special symbols
         if (!IsValidWord(text))
@@ -245,7 +250,7 @@ private:
         }
 
         Query query;
-        for (const std::string_view word : SplitIntoWords(text))
+        for (const std::string_view word : SPI(text))
         {
             const QueryWord query_word = ParseQueryWord(word);
             if (!query_word.is_stop)

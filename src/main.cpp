@@ -1,82 +1,85 @@
-// Park George Sergeevich (slonikin211) - student of Yandex Practicum | C++ Developer
-// Start of the project 02.06.2021
-// Finish of the project development 02.08.2021
-// Tasks:
-// Creating Search System with TF-IDF ranging of documents
-// Creating framework for testing (TDD)
-// Exceptions
-// Using template iterators for Paginator
+#include "search_server.h"
 
-// After main development
-// Template definition in a .cpp file (using explicit instanciation)
-// 31.08.2021 - Duration test functionality
-// 10.09.2021 - Refactoring and class updated (begin and end instead of GetDocumentById, GetWordFrequencies, RemoveDocument, RemoveDuplicates)
-// 07.10.2021 - Optimizee using parallel algorythms and threads (mutex)
-
-
-#include <iostream>
-using namespace std;
-
-#include "document.h"
 #include "log_duration.h"
-#include "paginator.h"
-#include "read_input_functions.h"
-#include "request_queue.h"
-#include "search_server.h"
-#include "string_processing.h"
-#include "test_example_functions.h"
-#include "remove_duplicates.h"
 
-
-#include "process_queries.h"
-#include "search_server.h"
-
+#include <execution>
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
 
 using namespace std;
 
-using namespace std;
-void PrintDocument(const Document& document) {
-    cout << "{ "s
-        << "document_id = "s << document.id << ", "s
-        << "relevance = "s << document.relevance << ", "s
-        << "rating = "s << document.rating << " }"s << endl;
+string GenerateWord(mt19937& generator, int max_length) {
+    const int length = uniform_int_distribution(1, max_length)(generator);
+    string word;
+    word.reserve(length);
+    for (int i = 0; i < length; ++i) {
+        word.push_back(uniform_int_distribution('a', 'z')(generator));
+    }
+    return word;
 }
 
-int main() {
-    SearchServer search_server("and with"s);
+vector<string> GenerateDictionary(mt19937& generator, int word_count, int max_length) {
+    vector<string> words;
+    words.reserve(word_count);
+    for (int i = 0; i < word_count; ++i) {
+        words.push_back(GenerateWord(generator, max_length));
+    }
+    words.erase(unique(words.begin(), words.end()), words.end());
+    return words;
+}
 
-    int id = 0;
-    for (
-        const string& text : {
-            "white cat and yellow hat"s,
-            "curly cat curly tail"s,
-            "nasty dog with big eyes"s,
-            "nasty pigeon john"s,
+string GenerateQuery(mt19937& generator, const vector<string>& dictionary, int word_count, double minus_prob = 0) {
+    string query;
+    for (int i = 0; i < word_count; ++i) {
+        if (!query.empty()) {
+            query.push_back(' ');
         }
-        ) {
-        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
+        if (uniform_real_distribution<>(0, 1)(generator) < minus_prob) {
+            query.push_back('-');
+        }
+        query += dictionary[uniform_int_distribution<int>(0, dictionary.size() - 1)(generator)];
+    }
+    return query;
+}
+
+vector<string> GenerateQueries(mt19937& generator, const vector<string>& dictionary, int query_count, int max_word_count) {
+    vector<string> queries;
+    queries.reserve(query_count);
+    for (int i = 0; i < query_count; ++i) {
+        queries.push_back(GenerateQuery(generator, dictionary, max_word_count));
+    }
+    return queries;
+}
+
+template <typename ExecutionPolicy>
+void Test(string_view mark, const SearchServer& search_server, const vector<string>& queries, ExecutionPolicy&& policy) {
+    LOG_DURATION(mark);
+    double total_relevance = 0;
+    for (const string_view query : queries) {
+        for (const auto& document : search_server.FindTopDocuments(policy, query)) {
+            total_relevance += document.relevance;
+        }
+    }
+    cout << total_relevance << endl;
+}
+
+#define TEST(policy) Test(#policy, search_server, queries, execution::policy)
+
+int main() {
+    mt19937 generator;
+
+    const auto dictionary = GenerateDictionary(generator, 1000, 10);
+    const auto documents = GenerateQueries(generator, dictionary, 10'000, 70);
+
+    SearchServer search_server(dictionary[0]);
+    for (size_t i = 0; i < documents.size(); ++i) {
+        search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
     }
 
+    const auto queries = GenerateQueries(generator, dictionary, 100, 70);
 
-    cout << "ACTUAL by default:"s << endl;
-    // ���������������� ������
-    for (const Document& document : search_server.FindTopDocuments("curly nasty cat"s)) {
-        PrintDocument(document);
-    }
-    cout << "BANNED:"s << endl;
-    // ���������������� ������
-    for (const Document& document : search_server.FindTopDocuments(execution::seq, "curly nasty cat"s, DocumentStatus::BANNED)) {
-        PrintDocument(document);
-    }
-
-    cout << "Even ids:"s << endl;
-    // ������������ ������
-    for (const Document& document : search_server.FindTopDocuments(execution::par, "curly nasty cat"s, [](int document_id, DocumentStatus status, int rating) { return document_id % 2 == 0; })) {
-        PrintDocument(document);
-    }
-
-    return 0;
+    TEST(seq);
+    TEST(par);
 }

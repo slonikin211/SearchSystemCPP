@@ -1,19 +1,27 @@
 #include "search_server.h"
 
-#include "string_processing.h"
+
+std::vector<std::string_view> SPI(std::string_view text) {
+    std::vector<std::string_view> words;
+    for (size_t pos = 0; pos != text.npos; text.remove_prefix(pos + 1)) {
+        pos = text.find(' ');
+        words.push_back(text.substr(0, pos));
+    }
+    return words;
+}
 
 SearchServer::SearchServer(const std::string& stop_words_text)
-    : SearchServer(SplitIntoWords(stop_words_text))
+    : SearchServer(SPI(stop_words_text))
 {
 }
 
 SearchServer::SearchServer(const char* stop_words_text)
-    : SearchServer(SplitIntoWords(stop_words_text))
+    : SearchServer(SPI(stop_words_text))
 {
 }
 
 SearchServer::SearchServer(const std::string_view stop_words_text)
-    : SearchServer(SplitIntoWords(stop_words_text))
+    : SearchServer(SPI(stop_words_text))
 {
 }
 
@@ -188,7 +196,7 @@ bool SearchServer::IsStopWord(const std::string_view word) const
 std::vector<std::string_view> SearchServer::SplitIntoWordsNoStop(const std::string_view text) const
 {
     std::vector<std::string_view> words;
-    for (auto word : SplitIntoWords(text))
+    for (auto word : SPI(text))
     {
         if (!IsStopWord(word)) 
         {
@@ -235,18 +243,10 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(std::string_view text) cons
 }
 
 SearchServer::Query SearchServer::ParseQuery(const std::string_view text) const {
-    return SearchServer::ParseQuery(std::execution::seq, text);
+    return SearchServer::ParseQuery(std::execution::seq, std::string(text));
 }
 
 double SearchServer::ComputeWordInverseDocumentFreq(const std::string_view word) const 
 {
     return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
 }
-
-
-
-// ------------------------------- explicit instanciation------------------------------- //
-
-// explicit constructor of string container
-// template SearchServer::SearchServer(const std::vector<std::string>&);
-// template SearchServer::SearchServer(const std::set<std::string>&);
