@@ -19,6 +19,7 @@ Depending on your CMake generator, build the project
 
 ## Usage
 
+### Basic
 Here is simple demonstation of usage the search system:
 ```
 #include "process_queries.h"
@@ -86,7 +87,7 @@ Even ids:
 { document_id = 4, relevance = 0.231049, rating = 1 }
 ```
 
-<div style="width: 100%; height: 5px; background-color: rgb(33,38,45); margin-bottom: 23px;"></div>
+### Paginator
 Also you can use pagination system for getting result by pages:
 ```
 #include "search_server.h"
@@ -125,7 +126,7 @@ Page break
 Page break
 ```
 
-<div style="width: 100%; height: 5px; background-color: rgb(33,38,45); margin-bottom: 23px;"></div>
+### Request queue
 Also modeled a request queue to remove requests with null result:
 ```
 #include <iostream>
