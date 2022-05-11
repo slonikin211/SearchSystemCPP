@@ -19,8 +19,8 @@ set(PAIRS
     src/read_input_functions.h src/read_input_functions.cpp
     src/remove_duplicates.h src/remove_duplicates.cpp
     src/request_queue.h src/request_queue.cpp
-    src/search_server.h src/search_server.cpp
     src/string_processing.h src/string_processing.h
+    src/search_server.h src/search_server.cpp
 )
 
 add_executable(server ${SOURCES} ${HEADERS} ${PAIRS})

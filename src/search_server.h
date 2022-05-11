@@ -1,7 +1,7 @@
 #pragma once
 
-#include "document.h"
 #include "string_processing.h"
+#include "document.h"
 #include "concurrent_map.h"
 
 #include <algorithm>
@@ -18,24 +18,12 @@
 #include <execution>
 #include <string_view>
 
-
+// SplitIntoWords analogue (fast fix for building project)
+// TODO: Delete this function and use SplitIntoWords instead
 std::vector<std::string_view> SPI(std::string_view text);
 
 // Maximum amount of documents in the search result
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
-
-
-// ================================= Search system ================================= //
-
-/*
-    SearchServer - class using TF-IDF algorithm for ranging documents
-    ----------------------------------------------------------------------------------
-    Functionality:
-    1. Constructor - setting up stop-words which will be ingnored in documents
-    2. AddDocument - adding document data and document rating
-    3. FindTopDocuments - returning vector of found documents (up to MAX_RESULT_DOCUMENT_COUNT)
-    4. GetDocumentCount - returning amount of documents in the SearchServer
-*/
 
 class SearchServer 
 {
@@ -63,29 +51,23 @@ class SearchServer
     };
 
 public:
-    // Param of constructor is a container of string words
     template <typename StringContainer>
-    explicit SearchServer(const StringContainer& stop_words)
+    SearchServer(const StringContainer& stop_words)
     {
         for (const auto& str : stop_words) 
         {
-            if (!str.empty())  // line is not empty ...
+            if (!str.empty())
             {
-                if (!IsValidWord(str))  // ... and has only valid symbols
+                if (!IsValidWord(str))
                 {
                     throw std::invalid_argument("Error! Line has invalid symbols!");
                 }
-                stop_words_.emplace(str);
+                stop_words_.emplace(std::string(str));
             }
         }
     }
-
-    // Constuructor that accepts the std::string with stop-words
-    explicit SearchServer(const std::string& stop_words_text);
-    // Constuructor that accepts the const char* with stop-words
-    explicit SearchServer(const char* stop_words_text);
-    // Constuructor that accepts the string_view with stop-words
-    explicit SearchServer(const std::string_view stop_words_text);
+    SearchServer(const std::string& stop_words_text) : SearchServer(std::string_view(stop_words_text)) {}
+    SearchServer(std::string_view stop_words_text) : SearchServer(SPI(stop_words_text)) {}
 
     
     // Add document

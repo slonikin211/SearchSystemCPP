@@ -10,21 +10,6 @@ std::vector<std::string_view> SPI(std::string_view text) {
     return words;
 }
 
-SearchServer::SearchServer(const std::string& stop_words_text)
-    : SearchServer(SPI(stop_words_text))
-{
-}
-
-SearchServer::SearchServer(const char* stop_words_text)
-    : SearchServer(SPI(stop_words_text))
-{
-}
-
-SearchServer::SearchServer(const std::string_view stop_words_text)
-    : SearchServer(SPI(stop_words_text))
-{
-}
-
 
 // ------------------------------- Interaction with the class (public) ------------------------------- //
 

@@ -8,9 +8,9 @@ std::set<std::string> MakeUniqueNonEmptyStrings(const StringContainer& strings) 
             non_empty_strings.insert(str);
         }
     }
-    return non_empty_strings;
+    return non_empty_st
+    rings;
 }
-
 std::vector<std::string_view> SplitIntoWords(std::string_view text) {
     std::vector<std::string_view> words;
     for (size_t pos = 0; pos != text.npos; text.remove_prefix(pos + 1)) {
@@ -18,14 +18,4 @@ std::vector<std::string_view> SplitIntoWords(std::string_view text) {
         words.push_back(text.substr(0, pos));
     }
     return words;
-}
-
-std::vector<std::string_view> SplitIntoWords(const char* text)
-{
-    return {};
-}
-
-std::vector<std::string_view> SplitIntoWords(const std::string& text)
-{
-    return {};
 }
