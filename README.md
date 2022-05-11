@@ -84,7 +84,7 @@ BANNED:
 Even ids:
 { document_id = 2, relevance = 0.866434, rating = 1 }
 { document_id = 4, relevance = 0.231049, rating = 1 }
-```
+```<br /><br /><br />
 
 Also you can use pagination system for getting result by pages:
 ```
@@ -122,7 +122,7 @@ Output:
 Page break
 { document_id = 4, relevance = 0.127706, rating = 2 }{ document_id = 5, relevance = 0.127706, rating = 1 }
 Page break
-```
+```<br /><br /><br />
 
 Also modeled a request queue to remove requests with null result:
 ```
