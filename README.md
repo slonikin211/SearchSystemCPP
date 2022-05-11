@@ -73,6 +73,18 @@ int main() {
     return 0;
 }
 ```
+Output:
+```
+ACTUAL by default:
+{ document_id = 2, relevance = 0.866434, rating = 1 }
+{ document_id = 4, relevance = 0.231049, rating = 1 }
+{ document_id = 1, relevance = 0.173287, rating = 1 }
+{ document_id = 3, relevance = 0.173287, rating = 1 }
+BANNED:
+Even ids:
+{ document_id = 2, relevance = 0.866434, rating = 1 }
+{ document_id = 4, relevance = 0.231049, rating = 1 }
+```
 
 Also you can use pagination system for getting result by pages:
 ```
@@ -80,6 +92,7 @@ Also you can use pagination system for getting result by pages:
 #include "paginator.h"
 #include <iostream>
 
+using namespace std;
 
 int main() {
     SearchServer search_server("and in on"s);
@@ -103,10 +116,19 @@ int main() {
     return 0;
 }
 ```
+Output:
+```
+{ document_id = 1, relevance = 0.458145, rating = 5 }{ document_id = 2, relevance = 0.356779, rating = 2 }
+Page break
+{ document_id = 4, relevance = 0.127706, rating = 2 }{ document_id = 5, relevance = 0.127706, rating = 1 }
+Page break
+```
 
 Also modeled a request queue to remove requests with null result:
 ```
 #include <iostream>
+#include "search_server.h"
+#include "request_queue.h"
 
 using namespace std;
 
@@ -137,4 +159,8 @@ int main() {
     cout << "Total empty requests: "s << request_queue.GetNoResultRequests() << endl;
     return 0;
 }
+```
+Output:
+```
+Total empty requests: 1437
 ```
