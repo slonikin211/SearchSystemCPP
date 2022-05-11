@@ -84,8 +84,9 @@ BANNED:
 Even ids:
 { document_id = 2, relevance = 0.866434, rating = 1 }
 { document_id = 4, relevance = 0.231049, rating = 1 }
-```<br /><br /><br />
+```
 
+<div style="width: 100%; height: 5px; background-color: rgb(33,38,45); margin-bottom: 23px;"></div>
 Also you can use pagination system for getting result by pages:
 ```
 #include "search_server.h"
@@ -122,8 +123,9 @@ Output:
 Page break
 { document_id = 4, relevance = 0.127706, rating = 2 }{ document_id = 5, relevance = 0.127706, rating = 1 }
 Page break
-```<br /><br /><br />
+```
 
+<div style="width: 100%; height: 5px; background-color: rgb(33,38,45); margin-bottom: 23px;"></div>
 Also modeled a request queue to remove requests with null result:
 ```
 #include <iostream>
